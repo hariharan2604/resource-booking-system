@@ -1,12 +1,32 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS build
-WORKDIR /workspace
-COPY pom.xml .
-RUN mvn -q -DskipTests dependency:go-offline
-COPY src ./src
-RUN mvn -q -DskipTests package
+# syntax=docker/dockerfile:1
 
+# ---------- Build stage ----------
+FROM gradle:9.7.1-jdk21 AS build
+
+WORKDIR /workspace
+
+COPY build.gradle.kts settings.gradle.kts ./
+
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle dependencies --no-daemon
+
+COPY src ./src
+
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle clean bootJar --no-daemon
+
+
+# ---------- Runtime stage ----------
 FROM eclipse-temurin:21-jre
+
 WORKDIR /app
-COPY --from=build /workspace/target/resource-booking-system.jar app.jar
+
+RUN useradd --system --create-home --uid 1001 appuser
+
+COPY --from=build /workspace/build/libs/resource-booking-system.jar app.jar
+
+USER appuser
+
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

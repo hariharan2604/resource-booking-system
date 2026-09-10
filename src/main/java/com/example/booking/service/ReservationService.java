@@ -14,7 +14,6 @@ import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.repository.ReservationRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.security.UserPrincipal;
-import com.example.booking.specification.ReservationSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,16 +41,25 @@ public class ReservationService {
      * caller-supplied parameter, since no userId is ever accepted from the client
      * here.
      */
-    public Page<ReservationResponse> list(UserPrincipal principal,
-            ReservationStatus status,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Pageable pageable) {
-        Long scopeUserId = isAdmin(principal) ? null : principal.getId();
+    public Page<ReservationResponse> list(
+        UserPrincipal principal,
+        ReservationStatus status,
+        BigDecimal minPrice,
+        BigDecimal maxPrice,
+        Pageable pageable) {
 
-        var spec = ReservationSpecification.withFilters(scopeUserId, status, minPrice, maxPrice);
-        return reservationRepository.findAll(spec, pageable).map(this::toResponse);
-    }
+    Long scopeUserId = isAdmin(principal) ? null : principal.getId();
+
+    return reservationRepository
+            .findReservations(
+                    scopeUserId,
+                    status,
+                    minPrice,
+                    maxPrice,
+                    pageable
+            )
+            .map(this::toResponse);
+}
 
     public ReservationResponse getById(UserPrincipal principal, Long id) {
         Reservation reservation = findEntity(id);

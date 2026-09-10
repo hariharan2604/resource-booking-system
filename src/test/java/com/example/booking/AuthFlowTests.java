@@ -3,12 +3,13 @@ package com.example.booking;
 import com.example.booking.entity.Role;
 import com.example.booking.entity.User;
 import com.example.booking.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureWebMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -94,7 +95,7 @@ class AuthFlowTests {
                 .getResponse()
                 .getContentAsString();
 
-        String jwt = objectMapper.readTree(token).get("token").asText();
+        String jwt = objectMapper.readTree(token).get("token").asString();
         User user = userRepository.findByUsername(username).orElseThrow();
         user.setEnabled(false);
         userRepository.save(user);
@@ -124,7 +125,7 @@ class AuthFlowTests {
                         "password", "password"))))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        String jwt = objectMapper.readTree(adminToken).get("token").asText();
+        String jwt = objectMapper.readTree(adminToken).get("token").asString();
 
         mockMvc.perform(post("/api/users")
                 .header("Authorization", "Bearer " + jwt)
@@ -152,6 +153,6 @@ class AuthFlowTests {
                         "password", password))))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return objectMapper.readTree(response).get("token").asText();
+        return objectMapper.readTree(response).get("token").asString();
     }
 }
