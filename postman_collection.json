@@ -94,8 +94,8 @@
           "name": "Create USER (ADMIN)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -109,8 +109,8 @@
           "name": "Create ADMIN (ADMIN)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -124,8 +124,8 @@
           "name": "Create ADMIN as USER (expect 403)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{userToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -163,7 +163,7 @@
           "name": "List Resources (paginated)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": {
               "raw": "{{baseUrl}}/api/resources?page=0&size=10&sort=id,asc",
               "host": ["{{baseUrl}}"], "path": ["api", "resources"],
@@ -179,7 +179,7 @@
           "name": "Get Resource by Id",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/resources/{{resourceId}}", "host": ["{{baseUrl}}"], "path": ["api", "resources", "{{resourceId}}"] }
           }
         },
@@ -187,8 +187,8 @@
           "name": "Create Resource (ADMIN)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -202,8 +202,8 @@
           "name": "Update Resource (ADMIN)",
           "request": {
             "method": "PUT",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -217,7 +217,7 @@
           "name": "Delete Resource (ADMIN)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/resources/{{resourceId}}", "host": ["{{baseUrl}}"], "path": ["api", "resources", "{{resourceId}}"] }
           }
         },
@@ -225,8 +225,8 @@
           "name": "Create Resource as USER (expect 403)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{userToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -240,8 +240,8 @@
           "name": "Malformed JSON (expect 400)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": { "mode": "raw", "raw": "{\"name\":" },
@@ -269,8 +269,8 @@
           ],
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{userToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -284,7 +284,7 @@
           "name": "List My Reservations (USER)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": {
               "raw": "{{baseUrl}}/api/reservations?page=0&size=10&sort=createdAt,desc",
               "host": ["{{baseUrl}}"], "path": ["api", "reservations"],
@@ -300,8 +300,8 @@
           "name": "Create Overlapping Reservation (expect 400)",
           "request": {
             "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{userToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -315,7 +315,7 @@
           "name": "List All Reservations (ADMIN, filtered)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "url": {
               "raw": "{{baseUrl}}/api/reservations?status=PENDING&minPrice=5&maxPrice=100&page=0&size=10&sort=price,desc",
               "host": ["{{baseUrl}}"], "path": ["api", "reservations"],
@@ -334,7 +334,7 @@
           "name": "Get Reservation by Id",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
           }
         },
@@ -342,7 +342,7 @@
           "name": "Cancel My Reservation (USER)",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}", "cancel"] }
           }
         },
@@ -350,8 +350,8 @@
           "name": "Full Update Reservation (ADMIN)",
           "request": {
             "method": "PUT",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "header": [
-              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
@@ -365,7 +365,7 @@
           "name": "Delete Reservation (ADMIN)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
           }
         },
@@ -373,7 +373,7 @@
           "name": "Access Another User's Reservation (expect 403)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
             "url": { "raw": "{{baseUrl}}/api/reservations/999", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "999"] }
           }
         }
