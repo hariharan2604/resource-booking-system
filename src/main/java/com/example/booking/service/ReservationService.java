@@ -68,6 +68,7 @@ public class ReservationService {
         if (!resource.isAvailable()) {
             throw new InvalidReservationException("Resource is not currently available for booking");
         }
+        assertNoOverlap(resource, request.getStartTime(), request.getEndTime(), null);
 
         // Identity resolution: a USER can only ever book for themselves, no matter what
         // userId (if any) was sent in the body. Only ADMIN may book on another user's
@@ -105,6 +106,12 @@ public class ReservationService {
         }
 
         Resource resource = resourceService.findEntity(request.getResourceId());
+        if (request.getStatus() != ReservationStatus.CANCELLED && !resource.isAvailable()) {
+            throw new InvalidReservationException("Resource is not currently available for booking");
+        }
+        if (request.getStatus() != ReservationStatus.CANCELLED) {
+            assertNoOverlap(resource, request.getStartTime(), request.getEndTime(), id);
+        }
 
         reservation.setResource(resource);
         reservation.setStartTime(request.getStartTime());
@@ -159,6 +166,14 @@ public class ReservationService {
     private boolean isAdmin(UserPrincipal principal) {
         return principal.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_" + Role.ADMIN.name()));
+    }
+
+    private void assertNoOverlap(Resource resource, java.time.LocalDateTime startTime,
+            java.time.LocalDateTime endTime, Long reservationId) {
+        if (reservationRepository.existsOverlappingReservation(
+                resource.getId(), startTime, endTime, ReservationStatus.CANCELLED, reservationId)) {
+            throw new InvalidReservationException("Resource is already reserved during the requested time");
+        }
     }
 
     private BigDecimal calculatePrice(BigDecimal pricePerHour, java.time.LocalDateTime start,

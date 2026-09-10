@@ -28,216 +28,248 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class BookingFlowIntegrationTests {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Test
-    void adminCanCreateUpdateAndDeleteResource() throws Exception {
-        String adminToken = login("admin", "admin123");
-        String resourceName = "Integration Room " + System.nanoTime();
-        String resourceJson = objectMapper.writeValueAsString(Map.of(
-                "name", resourceName,
-                "type", "ROOM",
-                "description", "Integration test room",
-                "location", "Test floor",
-                "capacity", 12,
-                "pricePerHour", 40.00,
-                "available", true));
+        @Test
+        void adminCanCreateUpdateAndDeleteResource() throws Exception {
+                String adminToken = login("admin", "admin123");
+                String resourceName = "Integration Room " + System.nanoTime();
+                String resourceJson = objectMapper.writeValueAsString(Map.of(
+                                "name", resourceName,
+                                "type", "ROOM",
+                                "description", "Integration test room",
+                                "location", "Test floor",
+                                "capacity", 12,
+                                "pricePerHour", 40.00,
+                                "available", true));
 
-        MvcResult created = mockMvc.perform(post("/api/resources")
-                .header("Authorization", bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(resourceJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.name").value(resourceName))
-                .andReturn();
-        long resourceId = json(created).get("id").asLong();
+                MvcResult created = mockMvc.perform(post("/api/resources")
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceJson))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.id", notNullValue()))
+                                .andExpect(jsonPath("$.name").value(resourceName))
+                                .andReturn();
+                long resourceId = json(created).get("id").asLong();
 
-        mockMvc.perform(put("/api/resources/{id}", resourceId)
-                .header("Authorization", bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(resourceJson.replace(resourceName, resourceName + " Updated")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(resourceName + " Updated"));
+                mockMvc.perform(put("/api/resources/{id}", resourceId)
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceJson.replace(resourceName, resourceName + " Updated")))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value(resourceName + " Updated"));
 
-        mockMvc.perform(get("/api/resources/{id}", resourceId)
-                .header("Authorization", bearer(adminToken)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(resourceName + " Updated"));
+                mockMvc.perform(get("/api/resources/{id}", resourceId)
+                                .header("Authorization", bearer(adminToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value(resourceName + " Updated"));
 
-        mockMvc.perform(delete("/api/resources/{id}", resourceId)
-                .header("Authorization", bearer(adminToken)))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(delete("/api/resources/{id}", resourceId)
+                                .header("Authorization", bearer(adminToken)))
+                                .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/resources/{id}", resourceId)
-                .header("Authorization", bearer(adminToken)))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(get("/api/resources/{id}", resourceId)
+                                .header("Authorization", bearer(adminToken)))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void userCanReadResourcesButCannotWriteThem() throws Exception {
-        String userToken = login("user", "user123");
+        @Test
+        void userCanReadResourcesButCannotWriteThem() throws Exception {
+                String userToken = login("user", "user123");
 
-        mockMvc.perform(get("/api/resources")
-                .header("Authorization", bearer(userToken)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray());
+                mockMvc.perform(get("/api/resources")
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content").isArray());
 
-        mockMvc.perform(post("/api/resources")
-                .header("Authorization", bearer(userToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Forbidden\",\"type\":\"ROOM\",\"pricePerHour\":10}"))
-                .andExpect(status().isForbidden());
-    }
+                mockMvc.perform(post("/api/resources")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"Forbidden\",\"type\":\"ROOM\",\"pricePerHour\":10}"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void userCanCreateFilterAndCancelOwnReservation() throws Exception {
-        String userToken = login("user", "user123");
-        long resourceId = firstResourceId(userToken);
-        String start = "2030-01-10T09:00:00";
-        String end = "2030-01-10T11:00:00";
+        @Test
+        void userCanCreateFilterAndCancelOwnReservation() throws Exception {
+                String userToken = login("user", "user123");
+                long resourceId = firstResourceId(userToken);
+                String start = "2030-01-10T09:00:00";
+                String end = "2030-01-10T11:00:00";
 
-        MvcResult created = mockMvc.perform(post("/api/reservations")
-                .header("Authorization", bearer(userToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(reservationPayload(resourceId, start, end)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("PENDING"))
-                .andExpect(jsonPath("$.price").value(30.00))
-                .andReturn();
-        long reservationId = json(created).get("id").asLong();
+                MvcResult created = mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, start, end)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.status").value("PENDING"))
+                                .andExpect(jsonPath("$.price").value(30.00))
+                                .andReturn();
+                long reservationId = json(created).get("id").asLong();
 
-        mockMvc.perform(get("/api/reservations")
-                .header("Authorization", bearer(userToken))
-                .param("status", "PENDING")
-                .param("minPrice", "20")
-                .param("maxPrice", "40"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(content().string(containsString("PENDING")));
+                mockMvc.perform(get("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .param("status", "PENDING")
+                                .param("minPrice", "20")
+                                .param("maxPrice", "40"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content").isArray())
+                                .andExpect(content().string(containsString("PENDING")));
 
-        mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
-                .header("Authorization", bearer(userToken)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("CANCELLED"));
 
-        mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
-                .header("Authorization", bearer(userToken)))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void userCannotAccessAnotherUsersReservation() throws Exception {
-        String userToken = login("user", "user123");
-        String aliceToken = login("alice", "alice123");
-        long resourceId = firstResourceId(userToken);
+        @Test
+        void userCannotAccessAnotherUsersReservation() throws Exception {
+                String userToken = login("user", "user123");
+                String aliceToken = login("alice", "alice123");
+                long resourceId = firstResourceId(userToken);
 
-        MvcResult created = mockMvc.perform(post("/api/reservations")
-                .header("Authorization", bearer(userToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(reservationPayload(resourceId, "2031-02-10T09:00:00", "2031-02-10T10:00:00")))
-                .andExpect(status().isCreated())
-                .andReturn();
-        long reservationId = json(created).get("id").asLong();
+                MvcResult created = mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, "2031-02-10T09:00:00", "2031-02-10T10:00:00")))
+                                .andExpect(status().isCreated())
+                                .andReturn();
+                long reservationId = json(created).get("id").asLong();
 
-        mockMvc.perform(get("/api/reservations/{id}", reservationId)
-                .header("Authorization", bearer(aliceToken)))
-                .andExpect(status().isForbidden());
+                mockMvc.perform(get("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(aliceToken)))
+                                .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
-                .header("Authorization", bearer(aliceToken)))
-                .andExpect(status().isForbidden());
-    }
+                mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
+                                .header("Authorization", bearer(aliceToken)))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void adminCanUpdateCancelAndDeleteReservation() throws Exception {
-        String userToken = login("user", "user123");
-        String adminToken = login("admin", "admin123");
-        long resourceId = firstResourceId(userToken);
+        @Test
+        void adminCanUpdateCancelAndDeleteReservation() throws Exception {
+                String userToken = login("user", "user123");
+                String adminToken = login("admin", "admin123");
+                long resourceId = firstResourceId(userToken);
 
-        MvcResult created = mockMvc.perform(post("/api/reservations")
-                .header("Authorization", bearer(userToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(reservationPayload(resourceId, "2032-03-10T09:00:00", "2032-03-10T10:00:00")))
-                .andExpect(status().isCreated())
-                .andReturn();
-        long reservationId = json(created).get("id").asLong();
+                MvcResult created = mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, "2032-03-10T09:00:00", "2032-03-10T10:00:00")))
+                                .andExpect(status().isCreated())
+                                .andReturn();
+                long reservationId = json(created).get("id").asLong();
 
-        mockMvc.perform(put("/api/reservations/{id}", reservationId)
-                .header("Authorization", bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"resourceId\":" + resourceId
-                        + ",\"startTime\":\"2032-03-10T10:00:00\","
-                        + "\"endTime\":\"2032-03-10T12:00:00\","
-                        + "\"status\":\"CONFIRMED\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CONFIRMED"))
-                .andExpect(jsonPath("$.price").value(30.00));
+                mockMvc.perform(put("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"resourceId\":" + resourceId
+                                                + ",\"startTime\":\"2032-03-10T10:00:00\","
+                                                + "\"endTime\":\"2032-03-10T12:00:00\","
+                                                + "\"status\":\"CONFIRMED\"}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                                .andExpect(jsonPath("$.price").value(30.00));
 
-        mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
-                .header("Authorization", bearer(adminToken)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                mockMvc.perform(patch("/api/reservations/{id}/cancel", reservationId)
+                                .header("Authorization", bearer(adminToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("CANCELLED"));
 
-        mockMvc.perform(delete("/api/reservations/{id}", reservationId)
-                .header("Authorization", bearer(adminToken)))
-                .andExpect(status().isNoContent());
-    }
+                mockMvc.perform(delete("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(adminToken)))
+                                .andExpect(status().isNoContent());
+        }
 
-    @Test
-    void invalidReservationAndResourceRequestsReturnValidationErrors() throws Exception {
-        String adminToken = login("admin", "admin123");
+        @Test
+        void invalidReservationAndResourceRequestsReturnValidationErrors() throws Exception {
+                String adminToken = login("admin", "admin123");
 
-        mockMvc.perform(post("/api/resources")
-                .header("Authorization", bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"\",\"type\":\"\",\"pricePerHour\":0}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Validation Failed"))
-                .andExpect(jsonPath("$.fieldErrors").exists());
+                mockMvc.perform(post("/api/resources")
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"\",\"type\":\"\",\"pricePerHour\":0}"))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.error").value("Validation Failed"))
+                                .andExpect(jsonPath("$.fieldErrors").exists());
 
-        mockMvc.perform(post("/api/reservations")
-                .header("Authorization", bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"resourceId\":999999,\"startTime\":\"2020-01-01T09:00:00\","
-                        + "\"endTime\":\"2020-01-01T10:00:00\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Validation Failed"));
-    }
+                mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"resourceId\":999999,\"startTime\":\"2020-01-01T09:00:00\","
+                                                + "\"endTime\":\"2020-01-01T10:00:00\"}"))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.error").value("Validation Failed"));
+        }
 
-    private String login(String username, String password) throws Exception {
-        MvcResult result = mockMvc.perform(post("/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(Map.of(
-                        "username", username,
-                        "password", password))))
-                .andExpect(status().isOk())
-                .andReturn();
-        return json(result).get("token").asText();
-    }
+        @Test
+        void overlappingReservationsAreRejected() throws Exception {
+                String userToken = login("user", "user123");
+                long resourceId = firstResourceId(userToken);
 
-    private long firstResourceId(String token) throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/resources")
-                .header("Authorization", bearer(token)))
-                .andExpect(status().isOk())
-                .andReturn();
-        return json(result).get("content").get(0).get("id").asLong();
-    }
+                mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, "2040-06-10T09:00:00", "2040-06-10T11:00:00")))
+                                .andExpect(status().isCreated());
 
-    private String reservationPayload(long resourceId, String start, String end) {
-        return "{\"resourceId\":" + resourceId
-                + ",\"startTime\":\"" + start + "\",\"endTime\":\"" + end + "\"}";
-    }
+                mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, "2040-06-10T10:00:00", "2040-06-10T12:00:00")))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.message")
+                                                .value("Resource is already reserved during the requested time"));
+        }
 
-    private JsonNode json(MvcResult result) throws Exception {
-        return objectMapper.readTree(result.getResponse().getContentAsString());
-    }
+        @Test
+        void malformedJsonReturnsBadRequest() throws Exception {
+                String adminToken = login("admin", "admin123");
 
-    private String bearer(String token) {
-        return "Bearer " + token;
-    }
+                mockMvc.perform(post("/api/resources")
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":"))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.error").value("Bad Request"));
+        }
+
+        private String login(String username, String password) throws Exception {
+                MvcResult result = mockMvc.perform(post("/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(Map.of(
+                                                "username", username,
+                                                "password", password))))
+                                .andExpect(status().isOk())
+                                .andReturn();
+                return json(result).get("token").asText();
+        }
+
+        private long firstResourceId(String token) throws Exception {
+                MvcResult result = mockMvc.perform(get("/api/resources")
+                                .header("Authorization", bearer(token)))
+                                .andExpect(status().isOk())
+                                .andReturn();
+                return json(result).get("content").get(0).get("id").asLong();
+        }
+
+        private String reservationPayload(long resourceId, String start, String end) {
+                return "{\"resourceId\":" + resourceId
+                                + ",\"startTime\":\"" + start + "\",\"endTime\":\"" + end + "\"}";
+        }
+
+        private JsonNode json(MvcResult result) throws Exception {
+                return objectMapper.readTree(result.getResponse().getContentAsString());
+        }
+
+        private String bearer(String token) {
+                return "Bearer " + token;
+        }
 }

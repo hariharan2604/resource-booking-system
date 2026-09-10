@@ -49,10 +49,10 @@ class AuthFlowTests {
     @Test
     void loginWithValidCredentials_returnsJwt() throws Exception {
         mockMvc.perform(post("/auth/login")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "username", "testadmin",
-                                "password", "password"))))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", "testadmin",
+                        "password", "password"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.role").value("ADMIN"));
@@ -61,16 +61,46 @@ class AuthFlowTests {
     @Test
     void loginWithInvalidCredentials_returns401() throws Exception {
         mockMvc.perform(post("/auth/login")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "username", "testadmin",
-                                "password", "wrong-password"))))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", "testadmin",
+                        "password", "wrong-password"))))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void unauthenticatedRequestToProtectedEndpoint_returns401() throws Exception {
         mockMvc.perform(get("/api/resources"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void tokenForDisabledUser_returns401() throws Exception {
+        String username = "disabled-" + System.nanoTime();
+        userRepository.save(User.builder()
+                .username(username)
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .enabled(true)
+                .build());
+
+        String token = mockMvc.perform(post("/auth/login")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", username,
+                        "password", "password"))))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String jwt = objectMapper.readTree(token).get("token").asText();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        user.setEnabled(false);
+        userRepository.save(user);
+
+        mockMvc.perform(get("/api/resources")
+                .header("Authorization", "Bearer " + jwt))
                 .andExpect(status().isUnauthorized());
     }
 }

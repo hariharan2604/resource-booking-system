@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -48,6 +49,13 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         String message = String.format("Parameter '%s' has an invalid value '%s'", ex.getName(), ex.getValue());
         return build(HttpStatus.BAD_REQUEST, "Bad Request", message, request);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableMessage(HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Bad Request",
+                "Request body is malformed or contains an invalid value", request);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
