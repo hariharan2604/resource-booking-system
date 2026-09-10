@@ -64,7 +64,7 @@ public class ReservationService {
             throw new InvalidReservationException("endTime must be after startTime");
         }
 
-        Resource resource = resourceService.findEntity(request.getResourceId());
+        Resource resource = resourceService.findEntityForUpdate(request.getResourceId());
         if (!resource.isAvailable()) {
             throw new InvalidReservationException("Resource is not currently available for booking");
         }
@@ -105,7 +105,7 @@ public class ReservationService {
             throw new InvalidReservationException("endTime must be after startTime");
         }
 
-        Resource resource = resourceService.findEntity(request.getResourceId());
+        Resource resource = resourceService.findEntityForUpdate(request.getResourceId());
         if (request.getStatus() != ReservationStatus.CANCELLED && !resource.isAvailable()) {
             throw new InvalidReservationException("Resource is not currently available for booking");
         }

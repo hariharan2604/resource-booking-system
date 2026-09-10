@@ -103,4 +103,55 @@ class AuthFlowTests {
                 .header("Authorization", "Bearer " + jwt))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void publicRegistrationCreatesUserAndAdminCanCreateAdmin() throws Exception {
+        String username = "registered-" + System.nanoTime();
+
+        mockMvc.perform(post("/auth/register")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", username,
+                        "password", "password123"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value(username))
+                .andExpect(jsonPath("$.role").value("USER"));
+
+        String adminToken = mockMvc.perform(post("/auth/login")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", "testadmin",
+                        "password", "password"))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String jwt = objectMapper.readTree(adminToken).get("token").asText();
+
+        mockMvc.perform(post("/api/users")
+                .header("Authorization", "Bearer " + jwt)
+                .contentType("application/json")
+                .content("{\"username\":\"admin-created-" + System.nanoTime()
+                        + "\",\"password\":\"password123\",\"role\":\"ADMIN\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test
+    void regularUserCannotCreateAdminAccount() throws Exception {
+        mockMvc.perform(post("/api/users")
+                .header("Authorization", "Bearer " + loginToken("user", "user123"))
+                .contentType("application/json")
+                .content("{\"username\":\"forbidden-admin\",\"password\":\"password123\",\"role\":\"ADMIN\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    private String loginToken(String username, String password) throws Exception {
+        String response = mockMvc.perform(post("/auth/login")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of(
+                        "username", username,
+                        "password", password))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(response).get("token").asText();
+    }
 }

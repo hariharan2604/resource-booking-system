@@ -8,6 +8,10 @@
     { "key": "baseUrl", "value": "http://localhost:8080" },
     { "key": "adminToken", "value": "" },
     { "key": "userToken", "value": "" },
+    { "key": "currentJwt", "value": "" },
+    { "key": "currentRole", "value": "" },
+    { "key": "registeredUsername", "value": "postman-user" },
+    { "key": "registeredPassword", "value": "password123" },
     { "key": "resourceId", "value": "1" },
     { "key": "reservationId", "value": "1" }
   ],
@@ -16,6 +20,18 @@
       "name": "Auth",
       "item": [
         {
+          "name": "Register USER",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{registeredUsername}}\",\n  \"password\": \"{{registeredPassword}}\"}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
           "name": "Login as ADMIN",
           "event": [
             {
@@ -23,7 +39,10 @@
               "script": {
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.collectionVariables.set('adminToken', json.token);"
+                  "pm.test('Login returns a JWT', function () { pm.expect(json.token).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('adminToken', json.token);",
+                  "pm.collectionVariables.set('currentJwt', json.token);",
+                  "pm.collectionVariables.set('currentRole', json.role);"
                 ],
                 "type": "text/javascript"
               }
@@ -47,7 +66,10 @@
               "script": {
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.collectionVariables.set('userToken', json.token);"
+                  "pm.test('Login returns a JWT', function () { pm.expect(json.token).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('userToken', json.token);",
+                  "pm.collectionVariables.set('currentJwt', json.token);",
+                  "pm.collectionVariables.set('currentRole', json.role);"
                 ],
                 "type": "text/javascript"
               }
@@ -61,6 +83,75 @@
               "raw": "{\n  \"username\": \"user\",\n  \"password\": \"user123\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create USER (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"managed-user-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Create ADMIN (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"managed-admin-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Create ADMIN as USER (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"should-fail-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {
+          "name": "Actuator Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Actuator Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/prometheus", "host": ["{{baseUrl}}"], "path": ["actuator", "prometheus"] }
           }
         }
       ]
@@ -144,6 +235,18 @@
             },
             "url": { "raw": "{{baseUrl}}/api/resources", "host": ["{{baseUrl}}"], "path": ["api", "resources"] }
           }
+        },
+        {
+          "name": "Malformed JSON (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"name\":" },
+            "url": { "raw": "{{baseUrl}}/api/resources", "host": ["{{baseUrl}}"], "path": ["api", "resources"] }
+          }
         }
       ]
     },
@@ -191,6 +294,21 @@
                 { "key": "sort", "value": "createdAt,desc" }
               ]
             }
+          }
+        },
+        {
+          "name": "Create Overlapping Reservation (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceId\": {{resourceId}},\n  \"startTime\": \"2027-01-10T10:00:00\",\n  \"endTime\": \"2027-01-10T12:00:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api", "reservations"] }
           }
         },
         {
