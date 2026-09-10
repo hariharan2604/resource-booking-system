@@ -12,6 +12,10 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -239,6 +243,40 @@ class BookingFlowIntegrationTests {
                                 .content("{\"name\":"))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.error").value("Bad Request"));
+        }
+
+        @Test
+        void concurrentBookingsForSameResourceAllowOnlyOneReservation() throws Exception {
+                String userToken = login("user", "user123");
+                String aliceToken = login("alice", "alice123");
+                long resourceId = firstResourceId(userToken);
+                String payload = reservationPayload(resourceId, "2042-07-10T09:00:00", "2042-07-10T11:00:00");
+                CountDownLatch start = new CountDownLatch(1);
+                ExecutorService executor = Executors.newFixedThreadPool(2);
+
+                Future<Integer> first = submitBooking(executor, start, userToken, payload);
+                Future<Integer> second = submitBooking(executor, start, aliceToken, payload);
+                start.countDown();
+
+                int firstStatus = first.get();
+                int secondStatus = second.get();
+                executor.shutdownNow();
+
+                org.hamcrest.MatcherAssert.assertThat(
+                                java.util.List.of(firstStatus, secondStatus),
+                                org.hamcrest.Matchers.containsInAnyOrder(201, 400));
+        }
+
+        private Future<Integer> submitBooking(ExecutorService executor, CountDownLatch start,
+                        String token, String payload) {
+                return executor.submit(() -> {
+                        start.await();
+                        return mockMvc.perform(post("/api/reservations")
+                                        .header("Authorization", bearer(token))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(payload))
+                                        .andReturn().getResponse().getStatus();
+                });
         }
 
         private String login(String username, String password) throws Exception {

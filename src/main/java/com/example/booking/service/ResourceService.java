@@ -67,6 +67,14 @@ public class ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
     }
 
+    com.example.booking.entity.Resource findEntityForUpdate(Long id) {
+        com.example.booking.entity.Resource resource = resourceRepository.findByIdForUpdate(id);
+        if (resource == null) {
+            throw new ResourceNotFoundException("Resource not found with id: " + id);
+        }
+        return resource;
+    }
+
     private ResourceResponse toResponse(com.example.booking.entity.Resource r) {
         return ResourceResponse.builder()
                 .id(r.getId())

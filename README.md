@@ -164,6 +164,23 @@ couple of requests that intentionally demonstrate expected `403` responses.
 
 ## API overview
 
+### Authentication and user registration
+
+| Method | Path             | Access       | Description                         |
+|--------|------------------|--------------|-------------------------------------|
+| POST   | `/auth/register` | Public       | Creates a `USER` account            |
+| POST   | `/auth/login`    | Public       | Returns a JWT                       |
+| POST   | `/api/users`     | ADMIN        | Creates a `USER` or `ADMIN` account |
+
+Public registration can never assign the `ADMIN` role. Admin accounts must be
+created by an existing administrator or provisioned by the deployment seed.
+
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"newuser","password":"password123"}'
+```
+
 ### Auth
 
 | Method | Path           | Access | Description        |
