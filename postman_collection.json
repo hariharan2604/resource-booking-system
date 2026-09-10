@@ -1,88 +1,55 @@
 {
   "info": {
     "name": "Resource Booking System API",
-    "description": "JWT-secured RESTful API for booking resources (rooms, vehicles, equipment).",
+    "description": "Clean collection for registration, JWT login, resource management, reservations, and Actuator monitoring.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
-    { "key": "adminToken", "value": "" },
-    { "key": "userToken", "value": "" },
-    { "key": "currentJwt", "value": "" },
-    { "key": "currentRole", "value": "" },
-    { "key": "registeredUsername", "value": "postman-user" },
-    { "key": "registeredPassword", "value": "password123" },
+    { "key": "adminJwt", "value": "" },
+    { "key": "userJwt", "value": "" },
     { "key": "resourceId", "value": "1" },
     { "key": "reservationId", "value": "1" }
   ],
   "item": [
     {
-      "name": "Auth",
+      "name": "Authentication",
       "item": [
         {
           "name": "Register USER",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{registeredUsername}}\",\n  \"password\": \"{{registeredPassword}}\"}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"postman-user-{{$timestamp}}\",\n  \"password\": \"password123\"\n}" },
+            "url": "{{baseUrl}}/auth/register"
           }
         },
         {
-          "name": "Login as ADMIN",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.test('Login returns a JWT', function () { pm.expect(json.token).to.be.a('string').and.not.empty; });",
-                  "pm.collectionVariables.set('adminToken', json.token);",
-                  "pm.collectionVariables.set('currentJwt', json.token);",
-                  "pm.collectionVariables.set('currentRole', json.role);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "name": "Login ADMIN",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const body = pm.response.json();",
+            "pm.test('JWT returned', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+            "pm.collectionVariables.set('adminJwt', body.token.trim());"
+          ] } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}" },
+            "url": "{{baseUrl}}/auth/login"
           }
         },
         {
-          "name": "Login as USER",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "pm.test('Login returns a JWT', function () { pm.expect(json.token).to.be.a('string').and.not.empty; });",
-                  "pm.collectionVariables.set('userToken', json.token);",
-                  "pm.collectionVariables.set('currentJwt', json.token);",
-                  "pm.collectionVariables.set('currentRole', json.role);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "name": "Login USER",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const body = pm.response.json();",
+            "pm.test('JWT returned', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+            "pm.collectionVariables.set('userJwt', body.token.trim());"
+          ] } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"user\",\n  \"password\": \"user123\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"user\",\n  \"password\": \"user123\"\n}" },
+            "url": "{{baseUrl}}/auth/login"
           }
         }
       ]
@@ -94,64 +61,30 @@
           "name": "Create USER (ADMIN)",
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"managed-user-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"managed-user-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"USER\"\n}" },
+            "url": "{{baseUrl}}/api/users"
           }
         },
         {
           "name": "Create ADMIN (ADMIN)",
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"managed-admin-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"managed-admin-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}" },
+            "url": "{{baseUrl}}/api/users"
           }
         },
         {
           "name": "Create ADMIN as USER (expect 403)",
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"should-fail-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Monitoring",
-      "item": [
-        {
-          "name": "Actuator Health",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] }
-          }
-        },
-        {
-          "name": "Actuator Prometheus Metrics",
-          "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/actuator/prometheus", "host": ["{{baseUrl}}"], "path": ["actuator", "prometheus"] }
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"forbidden-admin-{{$timestamp}}\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}" },
+            "url": "{{baseUrl}}/api/users"
           }
         }
       ]
@@ -160,93 +93,30 @@
       "name": "Resources",
       "item": [
         {
-          "name": "List Resources (paginated)",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": {
-              "raw": "{{baseUrl}}/api/resources?page=0&size=10&sort=id,asc",
-              "host": ["{{baseUrl}}"], "path": ["api", "resources"],
-              "query": [
-                { "key": "page", "value": "0" },
-                { "key": "size", "value": "10" },
-                { "key": "sort", "value": "id,asc" }
-              ]
-            }
-          }
+          "name": "List Resources (USER)",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/resources?page=0&size=10&sort=id,asc" }
         },
         {
-          "name": "Get Resource by Id",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/resources/{{resourceId}}", "host": ["{{baseUrl}}"], "path": ["api", "resources", "{{resourceId}}"] }
-          }
+          "name": "Get Resource (USER)",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/resources/{{resourceId}}" }
         },
         {
           "name": "Create Resource (ADMIN)",
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Conference Room B\",\n  \"type\": \"ROOM\",\n  \"description\": \"Small meeting room\",\n  \"location\": \"Floor 2\",\n  \"capacity\": 6,\n  \"pricePerHour\": 10.00,\n  \"available\": true\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/resources", "host": ["{{baseUrl}}"], "path": ["api", "resources"] }
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Room\",\n  \"type\": \"ROOM\",\n  \"description\": \"Created from Postman\",\n  \"location\": \"Floor 2\",\n  \"capacity\": 6,\n  \"pricePerHour\": 10.00,\n  \"available\": true\n}" },
+            "url": "{{baseUrl}}/api/resources"
           }
         },
         {
           "name": "Update Resource (ADMIN)",
-          "request": {
-            "method": "PUT",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Conference Room A (Renovated)\",\n  \"type\": \"ROOM\",\n  \"description\": \"Updated description\",\n  \"location\": \"Floor 3, East Wing\",\n  \"capacity\": 12,\n  \"pricePerHour\": 18.00,\n  \"available\": true\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/resources/{{resourceId}}", "host": ["{{baseUrl}}"], "path": ["api", "resources", "{{resourceId}}"] }
-          }
+          "request": { "method": "PUT", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Postman Room\",\n  \"type\": \"ROOM\",\n  \"pricePerHour\": 12.00,\n  \"available\": true\n}" }, "url": "{{baseUrl}}/api/resources/{{resourceId}}" }
         },
         {
           "name": "Delete Resource (ADMIN)",
-          "request": {
-            "method": "DELETE",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/resources/{{resourceId}}", "host": ["{{baseUrl}}"], "path": ["api", "resources", "{{resourceId}}"] }
-          }
-        },
-        {
-          "name": "Create Resource as USER (expect 403)",
-          "request": {
-            "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Should Fail\",\n  \"type\": \"ROOM\",\n  \"pricePerHour\": 5.00\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/resources", "host": ["{{baseUrl}}"], "path": ["api", "resources"] }
-          }
-        },
-        {
-          "name": "Malformed JSON (expect 400)",
-          "request": {
-            "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": { "mode": "raw", "raw": "{\"name\":" },
-            "url": { "raw": "{{baseUrl}}/api/resources", "host": ["{{baseUrl}}"], "path": ["api", "resources"] }
-          }
+          "request": { "method": "DELETE", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/resources/{{resourceId}}" }
         }
       ]
     },
@@ -254,129 +124,45 @@
       "name": "Reservations",
       "item": [
         {
-          "name": "Create Reservation (as USER)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json.id) { pm.collectionVariables.set('reservationId', json.id); }"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"resourceId\": 1,\n  \"startTime\": \"2027-01-10T09:00:00\",\n  \"endTime\": \"2027-01-10T11:00:00\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api", "reservations"] }
-          }
+          "name": "Create Reservation (USER)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body.id) pm.collectionVariables.set('reservationId', body.id);"] } }],
+          "request": { "method": "POST", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"resourceId\": {{resourceId}},\n  \"startTime\": \"2027-01-10T09:00:00\",\n  \"endTime\": \"2027-01-10T11:00:00\"\n}" }, "url": "{{baseUrl}}/api/reservations" }
         },
         {
           "name": "List My Reservations (USER)",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": {
-              "raw": "{{baseUrl}}/api/reservations?page=0&size=10&sort=createdAt,desc",
-              "host": ["{{baseUrl}}"], "path": ["api", "reservations"],
-              "query": [
-                { "key": "page", "value": "0" },
-                { "key": "size", "value": "10" },
-                { "key": "sort", "value": "createdAt,desc" }
-              ]
-            }
-          }
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/reservations?page=0&size=10&sort=createdAt,desc" }
         },
         {
-          "name": "Create Overlapping Reservation (expect 400)",
-          "request": {
-            "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"resourceId\": {{resourceId}},\n  \"startTime\": \"2027-01-10T10:00:00\",\n  \"endTime\": \"2027-01-10T12:00:00\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api", "reservations"] }
-          }
+          "name": "List All Reservations (ADMIN)",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/reservations?status=PENDING&minPrice=5&maxPrice=100&page=0&size=10&sort=price,desc" }
         },
         {
-          "name": "List All Reservations (ADMIN, filtered)",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "url": {
-              "raw": "{{baseUrl}}/api/reservations?status=PENDING&minPrice=5&maxPrice=100&page=0&size=10&sort=price,desc",
-              "host": ["{{baseUrl}}"], "path": ["api", "reservations"],
-              "query": [
-                { "key": "status", "value": "PENDING" },
-                { "key": "minPrice", "value": "5" },
-                { "key": "maxPrice", "value": "100" },
-                { "key": "page", "value": "0" },
-                { "key": "size", "value": "10" },
-                { "key": "sort", "value": "price,desc" }
-              ]
-            }
-          }
+          "name": "Create Overlap (expect 400)",
+          "request": { "method": "POST", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"resourceId\": {{resourceId}},\n  \"startTime\": \"2027-01-10T10:00:00\",\n  \"endTime\": \"2027-01-10T12:00:00\"\n}" }, "url": "{{baseUrl}}/api/reservations" }
         },
         {
-          "name": "Get Reservation by Id",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
-          }
+          "name": "Get Reservation (USER)",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/reservations/{{reservationId}}" }
         },
         {
-          "name": "Cancel My Reservation (USER)",
-          "request": {
-            "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}", "cancel"] }
-          }
+          "name": "Cancel Reservation (USER)",
+          "request": { "method": "PATCH", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel" }
         },
         {
-          "name": "Full Update Reservation (ADMIN)",
-          "request": {
-            "method": "PUT",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"resourceId\": 1,\n  \"startTime\": \"2027-01-10T09:00:00\",\n  \"endTime\": \"2027-01-10T12:00:00\",\n  \"status\": \"CONFIRMED\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
-          }
+          "name": "Update Reservation (ADMIN)",
+          "request": { "method": "PUT", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] }, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"resourceId\": {{resourceId}},\n  \"startTime\": \"2027-01-10T09:00:00\",\n  \"endTime\": \"2027-01-10T12:00:00\",\n  \"status\": \"CONFIRMED\"\n}" }, "url": "{{baseUrl}}/api/reservations/{{reservationId}}" }
         },
         {
           "name": "Delete Reservation (ADMIN)",
-          "request": {
-            "method": "DELETE",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
-          }
-        },
-        {
-          "name": "Access Another User's Reservation (expect 403)",
-          "request": {
-            "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
-            "url": { "raw": "{{baseUrl}}/api/reservations/999", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "999"] }
-          }
+          "request": { "method": "DELETE", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminJwt}}", "type": "string" }] }, "url": "{{baseUrl}}/api/reservations/{{reservationId}}" }
         }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/actuator/health" } },
+        { "name": "Prometheus Metrics", "request": { "method": "GET", "url": "{{baseUrl}}/actuator/prometheus" } }
       ]
     }
   ]
