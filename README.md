@@ -127,6 +127,20 @@ mvn clean verify
 
 Open `target/site/jacoco/index.html` to inspect line and branch coverage.
 
+## CI/CD with GitHub Actions
+
+The workflow at `.github/workflows/ci-cd.yml` runs Maven verification, uploads
+the JaCoCo report, and validates the Docker Compose configuration on pushes and
+pull requests. Pushes to `master` also build and publish the application image to
+GitHub Container Registry:
+
+```text
+ghcr.io/<owner>/<repository>:latest
+```
+
+The workflow uses GitHub's built-in `GITHUB_TOKEN`; enable package write access
+for the repository workflow if publishing is blocked by repository settings.
+
 **Never use the bundled default `JWT_SECRET` in production.** Generate your own:
 
 ```bash
