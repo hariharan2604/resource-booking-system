@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc 
+@AutoConfigureMockMvc
 class BookingFlowIntegrationTests {
 
         @Autowired
@@ -288,7 +288,7 @@ class BookingFlowIntegrationTests {
                                                 "password", password))))
                                 .andExpect(status().isOk())
                                 .andReturn();
-                return json(result).get("token").asText();
+                return json(result).get("token").asString();
         }
 
         private long firstResourceId(String token) throws Exception {

@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc 
+@AutoConfigureMockMvc
 class AuthFlowTests {
 
     @Autowired
@@ -95,7 +95,7 @@ class AuthFlowTests {
                 .getResponse()
                 .getContentAsString();
 
-        String jwt = objectMapper.readTree(token).get("token").asText();
+        String jwt = objectMapper.readTree(token).get("token").asString();
         User user = userRepository.findByUsername(username).orElseThrow();
         user.setEnabled(false);
         userRepository.save(user);
@@ -125,7 +125,7 @@ class AuthFlowTests {
                         "password", "password"))))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        String jwt = objectMapper.readTree(adminToken).get("token").asText();
+        String jwt = objectMapper.readTree(adminToken).get("token").asString();
 
         mockMvc.perform(post("/api/users")
                 .header("Authorization", "Bearer " + jwt)
@@ -153,6 +153,6 @@ class AuthFlowTests {
                         "password", password))))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return objectMapper.readTree(response).get("token").asText();
+        return objectMapper.readTree(response).get("token").asString();
     }
 }

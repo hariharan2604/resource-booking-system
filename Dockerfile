@@ -1,23 +1,19 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build stage ----------
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+FROM gradle:9.7.1-jdk21 AS build
 
 WORKDIR /workspace
 
-# Copy dependency descriptor first for Docker layer caching
-COPY pom.xml .
+COPY build.gradle.kts settings.gradle.kts ./
 
-# Cache Maven dependencies between builds
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -DskipTests dependency:go-offline
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle dependencies --no-daemon
 
-# Copy source code
 COPY src ./src
 
-# Build application
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -DskipTests package
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle clean bootJar --no-daemon
 
 
 # ---------- Runtime stage ----------
@@ -25,11 +21,9 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Run application as non-root user
 RUN useradd --system --create-home --uid 1001 appuser
 
-# Copy only the packaged application
-COPY --from=build /workspace/target/resource-booking-system.jar app.jar
+COPY --from=build /workspace/build/libs/resource-booking-system.jar app.jar
 
 USER appuser
 
