@@ -3,8 +3,8 @@
 A RESTful API for booking resources (rooms, vehicles, equipment) with JWT-based
 authentication and role-based access control (RBAC).
 
-Built with **Spring Boot 3.3**, **Java 17**, **Spring Security**, **JWT**, and
-**MySQL** via **Spring Data JPA / Hibernate**.
+Built with **Spring Boot 4.1.1**, **Java 21**, **Spring Security**, **JWT**,
+and profile-driven **H2/MySQL** support via **Spring Data JPA / Hibernate**.
 
 ## Features
 
@@ -47,19 +47,30 @@ postman_collection.json      importable Postman collection
 
 ## Prerequisites
 
-- Java 17+
-- Maven 3.8+
-- A running MySQL instance (or skip this and use the bundled H2
-  profile for a zero-setup trial)
+- Java 21+
+- Gradle wrapper (or Gradle 8.14+)
+- Optional: a running MySQL instance if you want to switch from the default H2
+  development profile
 
 ## Quick start (H2, no external database needed)
 
+Run the project directly with the Gradle wrapper:
+
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=h2
+./gradlew bootRun
 ```
 
-The app starts on `http://localhost:8080`. An in-memory H2 console is available
-at `http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:booking_db`, user
+On Windows:
+
+```powershell
+./gradlew.bat bootRun
+```
+
+The base config in `application.yml` defaults to the H2 profile when
+`SPRING_PROFILES_ACTIVE` is not set, so a plain local run picks up the
+in-memory H2 datasource automatically. The app starts on
+`http://localhost:8080`. An in-memory H2 console is available at
+`http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:booking_db`, user
 `sa`, empty password) — data resets on every restart.
 
 ## Running with Docker and MySQL
@@ -90,56 +101,49 @@ The API starts at `http://localhost:8080`. Stop it with `docker compose down`.
    ```
 3. Run:
    ```bash
-   mvn spring-boot:run
+   ./gradlew bootRun
    ```
 
 ## Building a runnable jar
 
 ```bash
-mvn clean package
-java -jar target/resource-booking-system.jar --spring.profiles.active=mysql
+./gradlew clean bootJar
+java -jar build/libs/resource-booking-system.jar --spring.profiles.active=mysql
 ```
 
 ## Environment variables reference
 
-| Variable              | Default (dev only)         | Description                                   |
-|------------------------|-----------------------------|------------------------------------------------|
-| `SPRING_PROFILES_ACTIVE` | `mysql`                   | `mysql` or `h2`                                  |
-| `DB_HOST`              | `localhost`                 | Database host                                  |
-| `DB_PORT`              | `3306`                      | Database port                                  |
-| `DB_NAME`              | `booking_db`                | Database name                                  |
-| `DB_USERNAME`          | `root`                      | Database user                                  |
-| `DB_PASSWORD`          | `root`                      | Database password                              |
-| `JWT_SECRET`           | *(dev placeholder — see below)* | Base64-encoded HMAC secret, ≥256 bits      |
-| `JWT_EXPIRATION_MS`    | `86400000` (24h)            | Token lifetime in milliseconds                 |
-| `SERVER_PORT`          | `8080`                      | HTTP port                                      |
-| `DDL_AUTO`             | `update`                    | Hibernate `ddl-auto` mode                      |
-| `SHOW_SQL`             | `false`                     | Log generated SQL                              |
-| `LOG_LEVEL`            | `INFO`                      | Log level for `com.example.booking`            |
+| Variable                 | Default (dev only)              | Description                                   |
+|--------------------------|----------------------------------|-----------------------------------------------|
+| `SPRING_PROFILES_ACTIVE` | `h2`                             | `mysql` or `h2`                               |
+| `DB_HOST`                | `localhost`                      | Database host                                 |
+| `DB_PORT`                | `3306`                           | Database port                                 |
+| `DB_NAME`                | `booking_db`                     | Database name                                 |
+| `DB_USERNAME`            | `root`                           | Database user                                 |
+| `DB_PASSWORD`            | `root`                           | Database password                             |
+| `JWT_SECRET`             | *(dev placeholder — see below)* | Base64-encoded HMAC secret, ≥256 bits         |
+| `JWT_EXPIRATION_MS`      | `86400000` (24h)                 | Token lifetime in milliseconds                |
+| `SERVER_PORT`            | `8080`                           | HTTP port                                     |
+| `DDL_AUTO`               | `update`                         | Hibernate `ddl-auto` mode                     |
+| `SHOW_SQL`               | `false`                          | Log generated SQL                             |
+| `LOG_LEVEL`              | `INFO`                           | Log level for `com.example.booking`           |
 
 ## Test coverage
 
-Run the integration suite and generate the JaCoCo report:
+Run the Gradle test lifecycle and generate the JaCoCo report:
 
 ```bash
-mvn clean verify
+./gradlew clean test
 ```
 
-Open `target/site/jacoco/index.html` to inspect line and branch coverage.
+The HTML JaCoCo report is written to `build/reports/jacoco/test/html/`.
 
 ## CI/CD with GitHub Actions
 
-The workflow at `.github/workflows/ci-cd.yml` runs Maven verification, uploads
-the JaCoCo report, and validates the Docker Compose configuration on pushes and
-pull requests. Pushes to `master` also build and publish the application image to
-GitHub Container Registry:
-
-```text
-ghcr.io/<owner>/<repository>:latest
-```
-
-The workflow uses GitHub's built-in `GITHUB_TOKEN`; enable package write access
-for the repository workflow if publishing is blocked by repository settings.
+The workflow at `.github/workflows/ci-cd.yml` runs the Gradle test/build
+pipeline, uploads the JaCoCo HTML report, and builds the Docker image on pushes
+and pull requests. The publish phase pushes the image to Docker Hub using
+repository secrets, not GitHub Container Registry.
 
 **Never use the bundled default `JWT_SECRET` in production.** Generate your own:
 
@@ -284,7 +288,7 @@ curl -X POST http://localhost:8080/api/reservations \
 ## Tests
 
 ```bash
-mvn test
+./gradlew test
 ```
 
 Includes a smoke test suite covering successful login, invalid-credential
