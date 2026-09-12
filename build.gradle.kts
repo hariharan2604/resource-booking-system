@@ -34,6 +34,7 @@ dependencies {
 
     // Cache
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -73,6 +74,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs(
+        "-Djdk.attach.allowAttachSelf=true",
+        "-XX:+EnableDynamicAgentLoading"
+    )
 }
 
 

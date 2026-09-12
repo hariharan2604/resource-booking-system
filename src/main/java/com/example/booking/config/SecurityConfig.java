@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {

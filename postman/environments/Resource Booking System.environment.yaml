@@ -1,0 +1,10 @@
+name: Resource Booking System
+values:
+  - key: adminJwt
+    value: ''
+  - key: userUsername
+    value: user
+  - key: userPassword
+    value: user123
+  - key: userJwt
+    value: ''
