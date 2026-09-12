@@ -1,0 +1,21 @@
+name: Resource Booking System - Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+    description: Base URL for the locally running Resource Booking System API
+  - key: adminUsername
+    value: admin
+    description: Default admin username (seeded on startup)
+  - key: adminPassword
+    value: admin123
+    description: Default admin password (seeded on startup)
+  - key: userUsername
+    value: user
+    description: A regular user account for testing
+  - key: userPassword
+    value: user123
+    description: Password for the regular test user
+  - key: adminJwt
+    value: ''
+  - key: userJwt
+    value: ''

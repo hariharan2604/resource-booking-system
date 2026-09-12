@@ -1,0 +1,7 @@
+$kind: collection
+name: 00 - Authentication
+description: |-
+  Login and registration endpoints. No Bearer token required.
+  The Login requests automatically save the JWT to collection variables (adminJwt / userJwt)
+  for use by all subsequent requests.
+order: 1000

@@ -5,6 +5,12 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:h2}
 
+  cache:
+    type: simple
+    cache-names:
+      - resources
+      - reservations
+
   jpa:
     hibernate:
       ddl-auto: ${DDL_AUTO:update}

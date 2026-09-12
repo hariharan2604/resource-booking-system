@@ -1,0 +1,25 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations/{{reservationId}}/cancel'
+method: PATCH
+order: 7000
+headers:
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{userJwt}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reservation cancelled successfully', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Status is CANCELLED', function () {
+          pm.expect(body.status).to.equal('CANCELLED');
+      });

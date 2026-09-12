@@ -12,6 +12,8 @@ import com.example.booking.repository.UserRepository;
 import com.example.booking.security.JwtUtil;
 import com.example.booking.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j 
 @Service
 @RequiredArgsConstructor
 public class AuthService {

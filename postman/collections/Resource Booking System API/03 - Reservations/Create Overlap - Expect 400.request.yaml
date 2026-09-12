@@ -1,0 +1,29 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations'
+method: POST
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{userJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "resourceId": {{resourceId}},
+      "startTime": "2027-06-01T09:30:00",
+      "endTime": "2027-06-01T10:30:00"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Overlapping reservation rejected (400)', function () {
+          pm.expect(pm.response.code).to.equal(400);
+      });

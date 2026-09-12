@@ -1,0 +1,10 @@
+$kind: collection
+name: 02 - Resources
+description: |-
+  Resource management endpoints (rooms, equipment, etc.).
+  - GET /api/resources — list all (any authenticated user, paginated)
+  - GET /api/resources/{id} — get by ID (any authenticated user)
+  - POST /api/resources — create (ADMIN only)
+  - PUT /api/resources/{id} — update (ADMIN only)
+  - DELETE /api/resources/{id} — delete (ADMIN only)
+order: 3000

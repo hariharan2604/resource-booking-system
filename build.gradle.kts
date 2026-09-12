@@ -32,6 +32,9 @@ dependencies {
     // Web / REST
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
+    // Cache
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+
     // JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 

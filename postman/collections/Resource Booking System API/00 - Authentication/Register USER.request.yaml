@@ -1,0 +1,33 @@
+$kind: http-request
+url: '{{baseUrl}}/auth/register'
+method: POST
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "newuser",
+      "password": "password123"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('User registered successfully', function () {
+          pm.expect(pm.response.code).to.equal(201);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('User ID returned', function () {
+          pm.expect(body).to.have.property('id');
+      });
+
+      pm.test('Role is USER', function () {
+          pm.expect(body.role).to.equal('USER');
+      });

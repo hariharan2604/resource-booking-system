@@ -1,0 +1,17 @@
+$kind: collection
+description: |-
+  A REST API for managing bookable resources (rooms, equipment, etc.) and reservations.
+  Supports two roles: ADMIN (full access) and USER (self-service bookings).
+
+  ## Authentication
+  Most endpoints require a Bearer JWT. Obtain a token via POST /auth/login and it will
+  be stored automatically in the collection variables adminJwt / userJwt.
+
+  ## Base URL
+  Configured via the {{baseUrl}} collection variable (default: http://localhost:8080).
+variables:
+  baseUrl: http://localhost:8080
+  adminJwt: ""
+  userJwt: ""
+  resourceId: ""
+  reservationId: ""

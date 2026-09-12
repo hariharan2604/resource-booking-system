@@ -1,0 +1,6 @@
+$kind: collection
+name: 01 - Users
+description: |-
+  User management endpoints. Creating users (both USER and ADMIN roles) requires an ADMIN JWT.
+  POST /api/users
+order: 2000

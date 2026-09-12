@@ -1,0 +1,39 @@
+$kind: http-request
+url: '{{baseUrl}}/api/users'
+method: POST
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "username": "newadmin",
+      "password": "adminpass1",
+      "role": "ADMIN"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Admin user created successfully', function () {
+          pm.expect(pm.response.code).to.equal(201);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('User ID returned', function () {
+          pm.expect(body).to.have.property('id');
+      });
+
+      pm.test('Role is ADMIN', function () {
+          pm.expect(body.role).to.equal('ADMIN');
+      });

@@ -1,0 +1,43 @@
+$kind: http-request
+url: '{{baseUrl}}/api/resources/{{resourceId}}'
+method: PUT
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "name": "Conference Room A (Updated)",
+      "type": "ROOM",
+      "description": "Updated description with new AV equipment",
+      "location": "Floor 2",
+      "capacity": 12,
+      "pricePerHour": 30.00,
+      "available": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Resource updated successfully', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Resource ID unchanged', function () {
+          pm.expect(String(body.id)).to.equal(pm.collectionVariables.get('resourceId'));
+      });
+
+      pm.test('Capacity updated', function () {
+          pm.expect(body.capacity).to.equal(12);
+      });

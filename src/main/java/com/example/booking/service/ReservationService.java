@@ -15,6 +15,9 @@ import com.example.booking.repository.ReservationRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,32 +44,35 @@ public class ReservationService {
      * caller-supplied parameter, since no userId is ever accepted from the client
      * here.
      */
+    @Transactional(readOnly = true)
     public Page<ReservationResponse> list(
-        UserPrincipal principal,
-        ReservationStatus status,
-        BigDecimal minPrice,
-        BigDecimal maxPrice,
-        Pageable pageable) {
+            UserPrincipal principal,
+            ReservationStatus status,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable) {
 
-    Long scopeUserId = isAdmin(principal) ? null : principal.getId();
+        Long scopeUserId = isAdmin(principal) ? null : principal.getId();
 
-    return reservationRepository
-            .findReservations(
-                    scopeUserId,
-                    status,
-                    minPrice,
-                    maxPrice,
-                    pageable
-            )
-            .map(this::toResponse);
-}
+        return reservationRepository
+                .findReservations(
+                        scopeUserId,
+                        status,
+                        minPrice,
+                        maxPrice,
+                        pageable)
+                .map(this::toResponse);
+    }
 
+    @Cacheable(value = "reservations", key = "#principal.id + ':' + #id")
+    @Transactional(readOnly = true)
     public ReservationResponse getById(UserPrincipal principal, Long id) {
         Reservation reservation = findEntity(id);
         assertCanView(principal, reservation);
         return toResponse(reservation);
     }
 
+    @CachePut(value = "reservations", key = "#result.id")
     public ReservationResponse create(UserPrincipal principal, ReservationCreateRequest request) {
         if (!request.getEndTime().isAfter(request.getStartTime())) {
             throw new InvalidReservationException("endTime must be after startTime");
@@ -78,9 +84,6 @@ public class ReservationService {
         }
         assertNoOverlap(resource, request.getStartTime(), request.getEndTime(), null);
 
-        // Identity resolution: a USER can only ever book for themselves, no matter what
-        // userId (if any) was sent in the body. Only ADMIN may book on another user's
-        // behalf.
         User bookingUser;
         if (isAdmin(principal) && request.getUserId() != null) {
             bookingUser = userRepository.findById(request.getUserId())
@@ -106,6 +109,7 @@ public class ReservationService {
     }
 
     /** Full update — ADMIN only; enforced via @PreAuthorize at the controller. */
+    @CachePut(value = "reservations", key = "#id")
     public ReservationResponse update(Long id, ReservationUpdateRequest request) {
         Reservation reservation = findEntity(id);
 
@@ -131,6 +135,7 @@ public class ReservationService {
     }
 
     /** USER may cancel only their own reservation; ADMIN may cancel any. */
+    @CachePut(value = "reservations", key = "#id")
     public ReservationResponse cancel(UserPrincipal principal, Long id) {
         Reservation reservation = findEntity(id);
         assertCanView(principal, reservation);
@@ -145,6 +150,7 @@ public class ReservationService {
     }
 
     /** ADMIN only; enforced via @PreAuthorize at the controller. */
+    @CacheEvict(value = "reservations", key = "#id")
     public void delete(Long id) {
         Reservation reservation = findEntity(id);
         if (reservation.getStatus() != ReservationStatus.CANCELLED) {
@@ -154,8 +160,6 @@ public class ReservationService {
         reservationRepository.deleteById(id);
     }
 
-    // ---- helpers ----
-
     private Reservation findEntity(Long id) {
         return reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
@@ -163,10 +167,6 @@ public class ReservationService {
 
     private void assertCanView(UserPrincipal principal, Reservation reservation) {
         if (!isAdmin(principal) && !reservation.getUser().getId().equals(principal.getId())) {
-            // 404 rather than 403 here would also be defensible (avoids confirming
-            // existence),
-            // but this API surfaces a clear 403 for authenticated-but-not-owner access
-            // attempts.
             throw new ForbiddenOperationException("You may only access your own reservations");
         }
     }

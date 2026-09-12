@@ -1,0 +1,9 @@
+$kind: collection
+name: 04 - Monitoring
+description: |-
+  Spring Boot Actuator and Prometheus monitoring endpoints.
+  - GET /actuator/health — application health (liveness/readiness probes)
+  - GET /actuator/metrics — available metrics list
+  - GET /actuator/prometheus — Prometheus-format metrics scrape endpoint
+  No authentication required for health; metrics endpoints may require auth depending on config.
+order: 5000

@@ -16,7 +16,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -29,7 +31,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -44,7 +46,14 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        PasswordEncoder passwordEncoder=PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+        if (passwordEncoder instanceof DelegatingPasswordEncoder) {
+            ((DelegatingPasswordEncoder) passwordEncoder)
+                    .setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
+        }
+
+        return passwordEncoder;
     }
 
     @Bean

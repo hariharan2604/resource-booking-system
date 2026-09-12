@@ -1,0 +1,36 @@
+$kind: http-request
+url: '{{baseUrl}}/auth/login'
+method: POST
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "admin",
+      "password": "admin123"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Admin login successful', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('JWT token returned', function () {
+          pm.expect(body).to.have.property('token');
+          pm.expect(body.token).to.be.a('string').and.not.empty;
+      });
+
+      if (body.token) {
+          const token = body.token;
+          pm.environment.set('adminJwt', token);
+          console.log('adminJwt saved, length:', token.length);
+      }

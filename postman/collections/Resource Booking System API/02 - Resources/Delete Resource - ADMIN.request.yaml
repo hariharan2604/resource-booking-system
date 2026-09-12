@@ -1,0 +1,24 @@
+$kind: http-request
+url: '{{baseUrl}}/api/resources/{{resourceId}}'
+method: DELETE
+order: 5000
+headers:
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Resource deleted successfully', function () {
+          pm.expect(pm.response.code).to.equal(204);
+      });
+
+      if (pm.response.code === 204) {
+          pm.collectionVariables.set('resourceId', '');
+          console.log('resourceId cleared after deletion');
+      }

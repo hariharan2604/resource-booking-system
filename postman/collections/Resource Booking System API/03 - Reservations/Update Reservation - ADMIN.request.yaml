@@ -1,0 +1,40 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations/{{reservationId}}'
+method: PUT
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "resourceId": {{resourceId}},
+      "startTime": "2027-06-01T09:00:00",
+      "endTime": "2027-06-01T12:00:00",
+      "status": "CONFIRMED"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reservation updated successfully', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Status is CONFIRMED', function () {
+          pm.expect(body.status).to.equal('CONFIRMED');
+      });
+
+      pm.test('Reservation ID unchanged', function () {
+          pm.expect(String(body.id)).to.equal(pm.collectionVariables.get('reservationId'));
+      });

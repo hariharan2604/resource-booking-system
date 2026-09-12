@@ -1,0 +1,28 @@
+$kind: http-request
+url: '{{baseUrl}}/api/resources/{{resourceId}}'
+method: GET
+order: 3000
+headers:
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{userJwt}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Resource retrieved successfully', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Resource has expected fields', function () {
+          pm.expect(body).to.have.property('id');
+          pm.expect(body).to.have.property('name');
+          pm.expect(body).to.have.property('type');
+          pm.expect(body).to.have.property('pricePerHour');
+      });

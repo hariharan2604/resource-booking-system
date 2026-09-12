@@ -1,0 +1,48 @@
+$kind: http-request
+url: '{{baseUrl}}/api/resources'
+method: POST
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "name": "Conference Room A",
+      "type": "ROOM",
+      "description": "Large conference room with projector",
+      "location": "Floor 2",
+      "capacity": 10,
+      "pricePerHour": 25.00,
+      "available": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Resource created', function () {
+          pm.expect(pm.response.code).to.equal(201);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Resource ID returned', function () {
+          pm.expect(body).to.have.property('id');
+      });
+
+      pm.test('Resource name matches', function () {
+          pm.expect(body.name).to.equal('Conference Room A');
+      });
+
+      if (body.id) {
+          pm.collectionVariables.set('resourceId', String(body.id));
+          console.log('resourceId saved:', body.id);
+      }
