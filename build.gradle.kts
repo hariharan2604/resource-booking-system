@@ -78,6 +78,7 @@ tasks.withType<Test> {
         "-Djdk.attach.allowAttachSelf=true",
         "-XX:+EnableDynamicAgentLoading"
     )
+    systemProperty("spring.profiles.active", "test")
 }
 
 
