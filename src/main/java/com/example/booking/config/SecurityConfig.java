@@ -2,7 +2,6 @@ package com.example.booking.config;
 
 import com.example.booking.security.JwtAuthenticationFilter;
 import com.example.booking.security.RestAuthEntryPoints;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +25,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -40,13 +39,11 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final RestAuthEntryPoints.Unauthorized unauthorizedHandler;
     private final RestAuthEntryPoints.Forbidden forbiddenHandler;
-
-    @Value("${app.cors.allowed-origins:http://localhost:3000}")
-    private String allowedOrigins;
+    private final AppProperties appProperties;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        PasswordEncoder passwordEncoder=PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
         if (passwordEncoder instanceof DelegatingPasswordEncoder) {
             ((DelegatingPasswordEncoder) passwordEncoder)
@@ -69,13 +66,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,DaoAuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider)
+            throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // stateless JWT API, no browser cookie sessions
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // allows H2 console iframe in
-                                                                                       // the h2 profile
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(forbiddenHandler))
@@ -85,16 +82,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/**", "/h2-console/**")
                         .permitAll()
-
-                        // Resources: everyone authenticated can read, only ADMIN can write
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/resources/**").authenticated()
                         .requestMatchers("/api/resources/**").hasRole("ADMIN")
-
-                        // Reservations: both roles can hit these endpoints;
-                        // fine-grained "own vs all" filtering happens in the service layer using the
-                        // JWT principal
                         .requestMatchers("/api/reservations/**").authenticated()
-
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -105,6 +95,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        String allowedOrigins = appProperties.getCors().getAllowedOrigins();
         configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())

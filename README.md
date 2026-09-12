@@ -5,6 +5,10 @@ authentication and role-based access control (RBAC).
 
 Built with **Spring Boot 4.1.1**, **Java 21**, **Spring Security**, **JWT**,
 and profile-driven **H2/MySQL** support via **Spring Data JPA / Hibernate**.
+The project now also uses a typed configuration model for application settings,
+a conditional Redis cache manager only when the active cache profile is truly
+Redis-backed, and an explicit test profile resource that keeps Redis and
+health auto-configuration out of the test path.
 
 ## Features
 
@@ -28,7 +32,7 @@ and profile-driven **H2/MySQL** support via **Spring Data JPA / Hibernate**.
 
 ```
 src/main/java/com/example/booking/
-  config/          Security, OpenAPI, and data-seeding configuration
+  config/          Security, OpenAPI, typed properties, cache configuration
   controller/      REST controllers (Auth, Resource, Reservation)
   dto/             Request/response payloads with Bean Validation
   entity/          JPA entities (User, Resource, Reservation) + enums
@@ -39,9 +43,12 @@ src/main/java/com/example/booking/
   specification/   JPA Specification for dynamic reservation filtering
 src/main/resources/
   application.yml            base config (profile-driven, all env-overridable)
-  application-mysql.yml      MySQL datasource
-  application-h2.yml         in-memory H2 for zero-setup local runs
-postman_collection.json      importable Postman collection
+  application-prod.yml       production profile for MySQL + Redis cache
+  application-dev.yml        dev/local profile using a simple cache
+src/test/resources/
+  application.yml            shared test resource covering H2 + no Redis
+  application-test.yml       dedicated test profile-style resource with H2 and simple cache
+postman/                    importable Postman collection and environment files
 .env.example                 template for local environment variables
 ```
 
@@ -128,6 +135,34 @@ java -jar build/libs/resource-booking-system.jar --spring.profiles.active=mysql
 | `SHOW_SQL`               | `false`                          | Log generated SQL                             |
 | `LOG_LEVEL`              | `INFO`                           | Log level for `com.example.booking`           |
 
+## Configuration model and cache profile
+
+The application now binds its application-level properties through a single
+configuration object:
+
+- `AppProperties` in `src/main/java/com/example/booking/config/AppProperties.java`
+- bound with `@ConfigurationPropertiesScan(basePackageClasses = AppProperties.class)`
+- nested sections cover `jwt` and `cors` settings cleanly without scattering
+  `@Value` injections across the codebase
+
+For caching:
+
+- production Redis-backed caching is enabled conditionally through
+  `RedisCacheConfig`
+- the Redis cache manager is created only when `spring.cache.type=redis`
+  is active and a Redis connection factory is available
+- the development/test profiles stay on a simple in-memory cache so the
+  application can run without requiring an external Redis instance
+
+For tests:
+
+- `src/test/resources/application-test.yml` keeps H2 in-memory datasource
+  details and disables the Redis health indicator
+- `spring.autoconfigure.exclude` removes Redis boot auto-configuration from
+  the test classpath
+- `spring.cache.type: simple` keeps the same two cache names used by the app
+  without trying to reach a live Redis server
+
 ## Test coverage
 
 Run the Gradle test lifecycle and generate the JaCoCo report:
@@ -135,6 +170,10 @@ Run the Gradle test lifecycle and generate the JaCoCo report:
 ```bash
 ./gradlew clean test
 ```
+
+The Gradle test task also activates the dedicated test profile automatically
+with the JVM system property `spring.profiles.active=test` in the shared
+`Test` task configuration.
 
 The HTML JaCoCo report is written to `build/reports/jacoco/test/html/`.
 
