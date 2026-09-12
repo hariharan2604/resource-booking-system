@@ -4,16 +4,24 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
+
   h2:
     console:
       enabled: true
       path: /h2-console
 
+  cache:
+    type: simple
+    cache-names:
+      - resources
+      - reservations
+
 app:
   jwt:
-    secret: VGV2ZWxvcG1lbnRPbmx5SFAyU2VjcmV0S2V5Rm9yTG9jYWxSdW5zMTIzNDU2Nzg5MA==
-    expiration-ms: 86400000
+    secret: ${JWT_SECRET:VGV2ZWxvcG1lbnRPbmx5SFAyU2VjcmV0S2V5Rm9yTG9jYWxSdW5zMTIzNDU2Nzg5MA==}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
