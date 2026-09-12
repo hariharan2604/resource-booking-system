@@ -17,28 +17,57 @@ services:
       timeout: 5s
       retries: 10
 
+  resource-booking-redis:
+    image: redis:7-alpine
+    container_name: resource-booking-redis
+    networks:
+      - resource-booking-network
+    volumes:
+      - resource-booking-redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   resource-booking-app:
     build: .
     image: resource-booking-system:latest
     container_name: resource-booking-app
+
     networks:
       - resource-booking-network
+
     depends_on:
       resource-booking-mysql:
         condition: service_healthy
+      resource-booking-redis:
+        condition: service_healthy
+
     environment:
-      SPRING_PROFILES_ACTIVE: mysql
+      SPRING_PROFILES_ACTIVE: prod
+
+      # MySQL
       DB_HOST: resource-booking-mysql
       DB_PORT: 3306
       DB_NAME: booking_db
       DB_USERNAME: root
       DB_PASSWORD: root
+
+      # Redis
+      REDIS_HOST: resource-booking-redis
+      REDIS_PORT: 6379
+
       DDL_AUTO: update
-      JWT_SECRET: -VGhpc0lzQVZlcnlMb25nRGV2ZWxvcG1lbnRPbmx5U2VjcmV0S2V5Rm9ySFMyNTZTaWduaW5nMTIzNDU2Nzg5MA==
+
+      JWT_SECRET: VGV2ZWxvcG1lbnRPbmx5SFAyU2VjcmV0S2V5Rm9yTG9jYWxSdW5zMTIzNDU2Nzg5MA==
+
     ports:
       - "${API_PORT:-8080}:8080"
+
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -78,8 +107,13 @@ services:
 volumes:
   resource-booking-data:
     name: resource-booking-data
+
+  resource-booking-redis-data:
+    name: resource-booking-redis-data
+
   resource-booking-prometheus-data:
     name: resource-booking-prometheus-data
+
   resource-booking-grafana-data:
     name: resource-booking-grafana-data
 

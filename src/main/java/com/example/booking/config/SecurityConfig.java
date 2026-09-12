@@ -12,9 +12,13 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -42,7 +46,14 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        PasswordEncoder passwordEncoder=PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+        if (passwordEncoder instanceof DelegatingPasswordEncoder) {
+            ((DelegatingPasswordEncoder) passwordEncoder)
+                    .setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
+        }
+
+        return passwordEncoder;
     }
 
     @Bean
@@ -60,10 +71,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // stateless JWT API, no browser cookie sessions
+                .csrf(AbstractHttpConfigurer::disable) // stateless JWT API, no browser cookie sessions
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // allows H2 console iframe in
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // allows H2 console iframe in
                                                                                        // the h2 profile
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(unauthorizedHandler)

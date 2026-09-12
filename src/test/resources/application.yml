@@ -9,6 +9,22 @@ spring:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
 
+  cache:
+    type: simple
+    cache-names:
+      - resources
+      - reservations
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+management:
+  health:
+    redis:
+      enabled: false
+
 app:
   jwt:
     secret: VGVzdE9ubHlLZXlGb3JBY3Rpb25UZXN0c1dpdGhBdExlYXN0MzJCeXRlcw==

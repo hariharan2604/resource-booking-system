@@ -47,8 +47,7 @@ public class JwtUtil {
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiry)
-                .signWith(signingKey) // jjwt picks the strongest HS algorithm the key length supports (HS256 for a
-                                      // 256-bit key)
+                .signWith(signingKey)
                 .compact();
     }
 

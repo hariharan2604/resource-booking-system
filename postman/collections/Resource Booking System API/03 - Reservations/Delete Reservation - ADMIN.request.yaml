@@ -1,0 +1,24 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations/{{reservationId}}'
+method: DELETE
+order: 8000
+headers:
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminJwt}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reservation deleted successfully', function () {
+          pm.expect(pm.response.code).to.equal(204);
+      });
+
+      if (pm.response.code === 204) {
+          pm.collectionVariables.set('reservationId', '');
+          console.log('reservationId cleared after deletion');
+      }

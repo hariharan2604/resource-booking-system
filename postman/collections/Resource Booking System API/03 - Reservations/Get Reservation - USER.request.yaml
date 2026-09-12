@@ -1,0 +1,29 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations/{{reservationId}}'
+method: GET
+order: 4000
+headers:
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{userJwt}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reservation retrieved successfully', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Reservation has expected fields', function () {
+          pm.expect(body).to.have.property('id');
+          pm.expect(body).to.have.property('resourceId');
+          pm.expect(body).to.have.property('startTime');
+          pm.expect(body).to.have.property('endTime');
+          pm.expect(body).to.have.property('status');
+      });

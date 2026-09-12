@@ -1,0 +1,13 @@
+$kind: collection
+name: 03 - Reservations
+description: |-
+  Reservation management endpoints.
+  - GET /api/reservations — list (ADMIN sees all, USER sees own; filterable by status/minPrice/maxPrice)
+  - GET /api/reservations/{id} — get by ID (ADMIN any, USER own only)
+  - POST /api/reservations — create a reservation
+  - PATCH /api/reservations/{id}/cancel — cancel a reservation (ADMIN any, USER own only)
+  - PUT /api/reservations/{id} — full update (ADMIN only)
+  - DELETE /api/reservations/{id} — delete (ADMIN only)
+
+  Statuses: PENDING, CONFIRMED, CANCELLED
+order: 4000

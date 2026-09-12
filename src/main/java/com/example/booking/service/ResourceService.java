@@ -5,6 +5,9 @@ import com.example.booking.dto.ResourceResponse;
 import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,14 +20,19 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
 
+    @Cacheable(value = "resources", key = "#pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort.toString()")
+    @Transactional(readOnly = true)
     public Page<ResourceResponse> getAll(Pageable pageable) {
         return resourceRepository.findAll(pageable).map(this::toResponse);
     }
 
+    @Cacheable(value = "resources", key = "#id")
+    @Transactional(readOnly = true)
     public ResourceResponse getById(Long id) {
         return toResponse(findEntity(id));
     }
 
+    @CachePut(value = "resources", key = "#result.id")
     public ResourceResponse create(ResourceRequest request) {
         com.example.booking.entity.Resource resource = com.example.booking.entity.Resource.builder()
                 .name(request.getName())
@@ -39,6 +47,7 @@ public class ResourceService {
         return toResponse(resourceRepository.save(resource));
     }
 
+    @CachePut(value = "resources", key = "#id")
     public ResourceResponse update(Long id, ResourceRequest request) {
         com.example.booking.entity.Resource resource = findEntity(id);
 
@@ -55,6 +64,7 @@ public class ResourceService {
         return toResponse(resourceRepository.save(resource));
     }
 
+    @CacheEvict(value = "resources", key = "#id")
     public void delete(Long id) {
         if (!resourceRepository.existsById(id)) {
             throw new ResourceNotFoundException("Resource not found with id: " + id);

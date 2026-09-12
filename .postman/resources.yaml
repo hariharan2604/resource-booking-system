@@ -1,0 +1,16 @@
+workspace:
+  id: 37fc544b-4b4a-4df1-9ab6-93ac7e7624f8
+
+localResources:
+  collections:
+    - ../postman/collections/Resource Booking System API
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ../Resource Booking System API: 26567689-7e5d3094-aa68-4e9d-bd71-cde20517aa23
+  environments:
+    ../postman/environments/Resource Booking System - Local.environment.yaml: 26567689-83332d3d-9ab8-4641-8802-20dc797b3dfa
+  globals:
+    ../postman/globals/workspace.globals.yaml: b89e45e6-9777-4d5e-86e0-43e700a28691

@@ -1,0 +1,22 @@
+$kind: http-request
+url: '{{baseUrl}}/actuator/health'
+method: GET
+order: 1000
+headers:
+  - key: Accept
+    value: application/json
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Application is healthy', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Status is UP', function () {
+          pm.expect(body.status).to.equal('UP');
+      });
+
+      console.log('Health status:', body.status);

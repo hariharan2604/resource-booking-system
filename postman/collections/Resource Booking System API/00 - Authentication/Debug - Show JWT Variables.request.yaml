@@ -1,0 +1,16 @@
+$kind: http-request
+url: '{{baseUrl}}/actuator/health'
+method: GET
+order: 4000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      console.log('========== JWT DEBUG ==========');
+      console.log('adminJwt exists:', !!pm.collectionVariables.get('adminJwt'));
+      console.log('adminJwt length:', (pm.collectionVariables.get('adminJwt') || '').length);
+      console.log('userJwt exists:', !!pm.collectionVariables.get('userJwt'));
+      console.log('userJwt length:', (pm.collectionVariables.get('userJwt') || '').length);
+      console.log('resourceId:', pm.collectionVariables.get('resourceId'));
+      console.log('reservationId:', pm.collectionVariables.get('reservationId'));
+      console.log('================================');

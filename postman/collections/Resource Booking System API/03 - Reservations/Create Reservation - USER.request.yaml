@@ -1,0 +1,44 @@
+$kind: http-request
+url: '{{baseUrl}}/api/reservations'
+method: POST
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{userJwt}}'
+body:
+  type: json
+  content: |-
+    {
+      "resourceId": {{resourceId}},
+      "startTime": "2027-06-01T09:00:00",
+      "endTime": "2027-06-01T11:00:00"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Reservation created', function () {
+          pm.expect(pm.response.code).to.equal(201);
+      });
+
+      const body = pm.response.json();
+
+      pm.test('Reservation ID returned', function () {
+          pm.expect(body).to.have.property('id');
+      });
+
+      pm.test('Status is PENDING or CONFIRMED', function () {
+          pm.expect(body.status).to.be.oneOf(['PENDING', 'CONFIRMED']);
+      });
+
+      if (body.id) {
+          pm.collectionVariables.set('reservationId', String(body.id));
+          console.log('reservationId saved:', body.id);
+      }

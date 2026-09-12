@@ -1,0 +1,20 @@
+$kind: http-request
+url: '{{baseUrl}}/actuator/prometheus'
+method: GET
+order: 2000
+headers:
+  - key: Accept
+    value: 'text/plain;version=0.0.4'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Prometheus metrics endpoint reachable', function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+
+      pm.test('Response is Prometheus text format', function () {
+          const text = pm.response.text();
+          pm.expect(text).to.include('# HELP');
+          pm.expect(text).to.include('# TYPE');
+      });
