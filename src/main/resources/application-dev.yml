@@ -21,6 +21,10 @@ spring:
       - resources
       - reservations
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 app:
   jwt:
     secret: ${JWT_SECRET:VGV2ZWxvcG1lbnRPbmx5SFAyU2VjcmV0S2V5Rm9yTG9jYWxSdW5zMTIzNDU2Nzg5MA==}
