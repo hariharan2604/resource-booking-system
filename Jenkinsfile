@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -18,10 +17,36 @@ pipeline {
             }
         }
 
+        stage('Code Coverage') {
+            steps {
+                recordCoverage(
+                    tools: [[
+                        parser: 'JACOCO',
+                        pattern: 'build/reports/jacoco/test/jacocoTestReport.xml'
+                    ]],
+
+                    sourceCodeRetention: 'EVERY_BUILD',
+
+                    qualityGates: [
+                        [
+                            threshold: 50.0,
+                            metric: 'LINE',
+                            criticality: 'UNSTABLE'
+                        ],
+                        [
+                            threshold: 50.0,
+                            metric: 'BRANCH',
+                            criticality: 'UNSTABLE'
+                        ]
+                    ]
+                )
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'main') {
+                    if (env.BRANCH_NAME == 'master') {
                         sh """
                             docker build \
                                 -t ${IMAGE_NAME}:${IMAGE_TAG} \
@@ -53,7 +78,7 @@ pipeline {
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
 
-                        if [ "$BRANCH_NAME" = "main" ]; then
+                        if [ "$BRANCH_NAME" = "master" ]; then
                             docker push "${IMAGE_NAME}:${IMAGE_TAG}"
                             docker push "${IMAGE_NAME}:latest"
                         else
@@ -84,4 +109,3 @@ pipeline {
         }
     }
 }
-
