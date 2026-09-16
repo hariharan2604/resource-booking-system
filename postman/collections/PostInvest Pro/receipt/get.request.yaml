@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{URL}}/receipt/get"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    // \"customer_id\": \"abd2e6cd-25a4-46ac-b08c-b602e8257467\"\r
+
+    \    // \"receipt_type_id\":\"8acd6eb2-0eb7-49f9-88d4-3b73ed323189\"\r
+
+    }"
+settings: {}
+order: 2000

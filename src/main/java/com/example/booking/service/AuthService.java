@@ -16,9 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +45,10 @@ public class AuthService {
         // which loads the user via CustomUserDetailsService and checks the BCrypt hash.
         // Throws BadCredentialsException on mismatch, handled by
         // GlobalExceptionHandler.
+//        Authentication authentication = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                UsernamePasswordAuthenticationToken.unauthenticated(request.getUsername(),request.getPassword()));
 
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
 
@@ -51,7 +56,7 @@ public class AuthService {
         List<? extends GrantedAuthority> authorities = (List<? extends GrantedAuthority>) authentication
                 .getAuthorities();
 
-        String token = jwtUtil.generateToken(principal.getUsername(), principal.getId(), authorities);
+        String token = jwtUtil.generateToken(principal, authorities);
 
         String role = authorities.get(0).getAuthority().replace("ROLE_", "");
 
@@ -59,6 +64,7 @@ public class AuthService {
                 .token(token)
                 .tokenType("Bearer")
                 .username(principal.getUsername())
+                .userId(principal.getId())
                 .role(role)
                 .expiresInMs(expirationMs)
                 .build();

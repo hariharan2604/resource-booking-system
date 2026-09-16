@@ -1,0 +1,14 @@
+$kind: http-request
+url: http://localhost:8080/auth/signup
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\":\"123@gmail.com\",\r
+
+    \    \"password\":\"test@123\"\r
+
+    }"
+settings: {}
+order: 1000

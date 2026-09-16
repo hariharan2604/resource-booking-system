@@ -1,0 +1,6 @@
+name: Post
+color: null
+values:
+  - key: URL
+    value: http://localhost:3000/
+    enabled: true

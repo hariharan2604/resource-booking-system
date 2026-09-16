@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{URL}}/customer/detail"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"customerId\": \"047ea4e3-6eae-42dc-9af2-b635a4f8ed68\"\r
+
+    }"
+settings: {}
+examples: ./.resources/detail.resources/examples
+order: 5000

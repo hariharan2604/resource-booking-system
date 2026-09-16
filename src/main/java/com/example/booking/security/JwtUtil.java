@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String username, Long userId, List<? extends GrantedAuthority> authorities) {
+    public String generateToken(UserPrincipal principal, List<? extends GrantedAuthority> authorities) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 
@@ -42,9 +43,10 @@ public class JwtUtil {
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .subject(username)
-                .claim("userId", userId)
+                .subject(principal.getUsername())
+                .claim("userId", principal.getId())
                 .claim("roles", roles)
+                .claim("email",principal.getEmail())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(signingKey)

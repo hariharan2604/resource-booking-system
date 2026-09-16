@@ -1,0 +1,74 @@
+$kind: http-request
+url: "{{URL}}/customer/update"
+method: POST
+body:
+  type: json
+  content: "// {\r
+
+    //     \"id\": \"c98c428d-d52f-4983-982f-f2fd2f809ad7\",\r
+
+    //     \"name\": \"Hariharan J\",\r
+
+    //     \"dob\": \"26/04/2004\",\r
+
+    //     \"gender\": \"M\",\r
+
+    //     \"mobile\": \"9342970272\",\r
+
+    //     \"email\": \"hariharan@gmail.com\",\r
+
+    //     \"address1\": \"No.11,1st Street,Sindhu Garden\",\r
+
+    //     \"address2\": \" Gandhi Nagar, Katpadi\",\r
+
+    //     \"area\": \"Vellore\",\r
+
+    //     \"city\": \"Katpadi\",\r
+
+    //     \"state\": \"Tamil Nadu\",\r
+
+    //     \"zip\": 632006,\r
+
+    //     \"agent_id\": \"{{AGENT_ID}}\",\r
+
+    //     \"cif\": \"2837246835\"\r
+
+    // }\r
+
+    \r
+
+    \r
+
+    {\r
+
+    \    \"id\": \"004d9765-60ec-4488-95d3-6e9c8ce71b21\",\r
+
+    \        \"name\": \"Chittu\",\r
+
+    \        \"dob\": \"10/09/2006\",\r
+
+    \        \"gender\": \"M\",\r
+
+    \        \"mobile\": \"9597053801\",\r
+
+    \        \"email\": \"chittu@gmail.com\",\r
+
+    \        \"address1\": \"No.11,1st Street,Sindhu Garden\",\r
+
+    \        \"address2\": \" Gandhi Nagar, Katpadi\",\r
+
+    \        \"area\": \"Vellore\",\r
+
+    \        \"city\": \"Katpadi\",\r
+
+    \        \"state\": \"Tamil Nadu\",\r
+
+    \        \"zip\": 632007,\r
+
+    \        \"agent_id\": \"{{AGENT_ID}}\",\r
+
+    \    \"cif\": \"2833246835\"\r
+
+    }"
+settings: {}
+order: 3000

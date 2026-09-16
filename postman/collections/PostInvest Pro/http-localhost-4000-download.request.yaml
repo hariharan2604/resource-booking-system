@@ -1,0 +1,18 @@
+$kind: http-request
+name: http://localhost:4000/download
+description: "excel download\r\n"
+url: http://localhost:4000/download
+method: POST
+body:
+  type: json
+  content: "[\r
+
+    \  [\"Header1\", \"Header2\", \"Header3\"],\r
+
+    \  [\"Row1Col1\", \"Row1Col2\", \"Row1Col3\"],\r
+
+    \  [\"Row2Col1\", \"Row2Col2\", \"Row2Col3\"]\r
+
+    ]\r\n"
+settings: {}
+order: 5000

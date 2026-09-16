@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{URL}}/auth/agent-register"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Hariharan J\",\r
+
+    \    \"password\": \"test\",\r
+
+    \    \"mobile\": \"9342970272\",\r
+
+    \    \"email\": \"hariharanbackup2604@gmail.com\",\r
+
+    \    \"gender\": \"M\",\r
+
+    \    \"dob\": \"2025-07-01 05:24:31\",\r
+
+    \    \"address1\": \"No.11,1st Street,Sindhu Garden\",\r
+
+    \    \"address2\": \" Gandhi Nagar, Katpadi\",\r
+
+    \    \"city\": {\"value\":\"Katpadi\"},\r
+
+    \    \"area\": \"Vellore\",\r
+
+    \    \"state\": {\"value\":\"Tamil Nadu\"},\r
+
+    \    \"zip\": \"632006\"\r
+
+    }"
+settings: {}
+order: 1000

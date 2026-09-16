@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{URL}}/auth/agent-login"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\":\"7010251742\",\r
+
+    \    \"password\":\"test\"\r
+
+    }"
+settings: {}
+order: 2000

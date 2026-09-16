@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{URL}}/investment/add"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"customer_id\": \"047ea4e3-6eae-42dc-9af2-b635a4f8ed68\",\r
+
+    \    \"investment_acc_no\": \"1998447773234\",\r
+
+    \    \"scheme_id\": \"27a75f8c-583c-46d8-af3e-38bb8d7dae5a\",\r
+
+    \    \"investment_amount\": \"90000\",\r
+
+    \    \"tenure\": \"48\",\r
+
+    \    \"installment_amount\": \"2500\",\r
+
+    \    \"investment_date\": \"18/12/2024\",\r
+
+    \    \"next_installment_due\": \"18/08/2024\",\r
+
+    \    \"status_id\": \"3ab67c8f-6cd2-46e9-9823-800edb871621\"\r
+
+    }"
+settings: {}
+order: 1000

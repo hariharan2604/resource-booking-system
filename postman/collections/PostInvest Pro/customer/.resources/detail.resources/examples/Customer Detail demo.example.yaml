@@ -1,0 +1,50 @@
+$kind: http-example
+request:
+  url: "{{URL}}/customer/detail"
+  method: POST
+  body:
+    type: json
+    content: "{\r
+
+      \    \"customerId\": \"047ea4e3-6eae-42dc-9af2-b635a4f8ed68\"\r
+
+      }"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Server: nginx/1.27.4
+    Date: Tue, 01 Jul 2025 05:30:46 GMT
+    Content-Type: application/json; charset=utf-8
+    Content-Length: "455"
+    Connection: keep-alive
+    X-Powered-By: Express
+    Access-Control-Allow-Origin: "*"
+    ETag: W/"1c7-fpi44Jc0HfUxYx1VckM9FRL54GI"
+  body:
+    type: json
+    content: |-
+      {
+          "status": "success",
+          "code": 200,
+          "data": {
+              "id": "047ea4e3-6eae-42dc-9af2-b635a4f8ed68",
+              "cif": null,
+              "name": "Shri",
+              "dob": "2004-02-19T00:00:00.000Z",
+              "gender": "F",
+              "mobile": "9597053801",
+              "email": "shri@gmail.com",
+              "address1": "No.11,1st Street,Sindhu Garden",
+              "address2": " Gandhi Nagar, Katpadi",
+              "area": "Vellore",
+              "city": "Salavanpet",
+              "state": "Tamil Nadu",
+              "zip": 632001,
+              "agent_id": "6e5901de-4447-48a2-bef4-fa35ded04dce",
+              "relatedCustomers": [],
+              "Investments": []
+          },
+          "error": null
+      }
+order: 1000

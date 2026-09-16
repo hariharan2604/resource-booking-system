@@ -29,9 +29,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedUser("admin", "admin123", Role.ADMIN);
-        seedUser("user", "user123", Role.USER);
-        seedUser("alice", "alice123", Role.USER);
+        seedUser("admin", "admin123","admin@gmail.com", Role.ADMIN);
+        seedUser("user", "user123","user@gmail.com", Role.USER);
+        seedUser("alice", "alice123", "alice@gmail.com",Role.USER);
 
         if (resourceRepository.count() == 0) {
             resourceRepository.save(Resource.builder()
@@ -68,11 +68,12 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void seedUser(String username, String rawPassword, Role role) {
+    private void seedUser(String username, String rawPassword,String email, Role role) {
         if (!userRepository.existsByUsername(username)) {
             userRepository.save(User.builder()
                     .username(username)
                     .password(passwordEncoder.encode(rawPassword))
+                            .email(email)
                     .role(role)
                     .enabled(true)
                     .build());
