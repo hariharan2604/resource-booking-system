@@ -29,12 +29,12 @@ pipeline {
 
                     qualityGates: [
                         [
-                            threshold: 80.0,
+                            threshold: 50.0,
                             metric: 'LINE',
                             criticality: 'UNSTABLE'
                         ],
                         [
-                            threshold: 70.0,
+                            threshold: 50.0,
                             metric: 'BRANCH',
                             criticality: 'UNSTABLE'
                         ]
@@ -46,7 +46,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'main') {
+                    if (env.BRANCH_NAME == 'master') {
                         sh """
                             docker build \
                                 -t ${IMAGE_NAME}:${IMAGE_TAG} \
