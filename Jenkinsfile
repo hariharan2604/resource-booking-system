@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -15,6 +15,32 @@ pipeline {
                     chmod +x gradlew
                     ./gradlew clean build
                 '''
+            }
+        }
+
+        stage('Code Coverage') {
+            steps {
+                recordCoverage(
+                    tools: [[
+                        parser: 'JACOCO',
+                        pattern: 'build/reports/jacoco/test/jacocoTestReport.xml'
+                    ]],
+
+                    sourceCodeRetention: 'EVERY_BUILD',
+
+                    qualityGates: [
+                        [
+                            threshold: 80.0,
+                            metric: 'LINE',
+                            criticality: 'UNSTABLE'
+                        ],
+                        [
+                            threshold: 70.0,
+                            metric: 'BRANCH',
+                            criticality: 'UNSTABLE'
+                        ]
+                    ]
+                )
             }
         }
 
@@ -53,7 +79,7 @@ pipeline {
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
 
-                        if [ "$BRANCH_NAME" = "main" ]; then
+                        if [ "$BRANCH_NAME" = "master" ]; then
                             docker push "${IMAGE_NAME}:${IMAGE_TAG}"
                             docker push "${IMAGE_NAME}:latest"
                         else
@@ -84,4 +110,4 @@ pipeline {
         }
     }
 }
-
+```
