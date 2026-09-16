@@ -1,0 +1,82 @@
+$kind: http-request
+url: "{{URL}}/customer/add-relation"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"id\": \"047ea4e3-6eae-42dc-9af2-b635a4f8ed68\",\r
+
+    \    \"cif\": null,\r
+
+    \    \"name\": \"Saraswathi\",\r
+
+    \    \"dob\": \"19/08/1981\",\r
+
+    \    \"gender\": \"F\",\r
+
+    \    \"mobile\": \"9363307007\",\r
+
+    \    \"email\": \"sarasjai0500@gmail.com\",\r
+
+    \    \"address1\": \"No.11,1st Street,Sindhu Garden\",\r
+
+    \    \"address2\": \" Gandhi Nagar, Katpadi\",\r
+
+    \    \"area\": \"Vellore\",\r
+
+    \    \"city\": \"Katpadi\",\r
+
+    \    \"state\": \"Tamil Nadu\",\r
+
+    \    \"zip\": 632006,\r
+
+    \    \"agent_id\": \"{{AGENT_ID}}\",\r
+
+    \    \"relationship\": \"Mother\"\r
+
+    }\r
+
+    // {\r
+
+    //     \"id\":\"d60e842f-aa27-47de-8cca-93a311bc3742\",\r
+
+    //     \"name\":\"Shri\",\r
+
+    //     \"mobile\": \"9597053801\",\r
+
+    //     \"email\": \"shri@gmail.com\",\r
+
+    //     \"gender\": \"F\",\r
+
+    //     \"dob\": \"19/02/2004\",\r
+
+    //     \"address1\": \"No.11,1st Street,Sindhu Garden\",\r
+
+    //     \"address2\":\" Gandhi Nagar, Katpadi\",\r
+
+    //     \"city\":\"Salavanpet\",\r
+
+    //     \"area\": \"Vellore\",\r
+
+    //     \"state\": \"Tamil Nadu\",\r
+
+    //     \"zip\": \"632001\",\r
+
+    //     \"agent_id\":\"{{AGENT_ID}}\",\r
+
+    //     \"cif\":\"283746835\"\r
+
+    // }\r
+
+    // {\r
+
+    //     \"id\": \"d60e842f-aa27-47de-8cca-93a311bc3742\",\r
+
+    //     \"relation_id\": \"c98c428d-d52f-4983-982f-f2fd2f809ad7\",\r
+
+    //     \"relationship\": \"friend\"\r
+
+    // }"
+settings: {}
+order: 2000

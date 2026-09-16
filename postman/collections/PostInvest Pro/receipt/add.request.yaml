@@ -1,0 +1,66 @@
+$kind: http-request
+url: "{{URL}}/receipt/add"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"receipt_type_id\": \"{{CASH}}\",\r
+
+    \    \"customer_id\": \"d60e842f-aa27-47de-8cca-93a311bc3742\",\r
+
+    \    \"receipt_amount\": \"5000\",\r
+
+    \    // \"chq_number\": \"91121\",\r
+
+    \    // \"cheque_date\": \"10/01/2025\",\r
+
+    \    // \"bank_id\": \"07e79af1-b226-490c-b368-7896ca020fd6\",\r
+
+    \    // \"instrument_class_id\": \"\",\r
+
+    \    // \"sb_acc_number\": \"8769876987696\",\r
+
+    \    \"receipt_details\": [\r
+
+    \        {\r
+
+    \            \"investment_id\": \"a81ee6b1-52e2-43f4-8556-ec0d71088fb2\",\r
+
+    \            \"no_of_installments\": \"2\"\r
+
+    \        }\r
+
+    \        // {\r
+
+    \        //     \"investment_id\": \"4e8a4023-a042-4cf2-b938-c3968cea24dc\",\r
+
+    \        //     \"no_of_installments\": \"2\"\r
+
+    \        // }\r
+
+    \        // {\r
+
+    \        //     \"investment_id\": \"bdb08639-9de6-46d7-aff1-ec4418d7270a\",\r
+
+    \        //     \"remittance_amount\": \"10000\",\r
+
+    \        //     \"no_of_installments\": \"1\"\r
+
+    \        // },\r
+
+    \        // {\r
+
+    \        //     \"investment_id\": \"ca9efd94-0641-42dd-8ef5-3b9d5485d51b\",\r
+
+    \        //     \"remittance_amount\": \"10000\",\r
+
+    \        //     \"no_of_installments\": \"1\"\r
+
+    \        // }\r
+
+    \    ]\r
+
+    }"
+settings: {}
+order: 1000

@@ -15,6 +15,7 @@ public class UserPrincipal implements UserDetails {
     private final Long id;
     private final String username;
     private final String password;
+    private String email;
     private final boolean enabled;
     private final Collection<? extends GrantedAuthority> authorities;
 
@@ -23,6 +24,7 @@ public class UserPrincipal implements UserDetails {
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.enabled = user.isEnabled();
+        this.email=user.getEmail();
         // Spring Security convention: role names are prefixed with ROLE_ for hasRole()/@PreAuthorize checks
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }

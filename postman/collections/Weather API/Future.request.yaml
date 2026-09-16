@@ -1,0 +1,13 @@
+$kind: http-request
+url: http://api.weatherapi.com/v1/forecast.json?key={{API_KEY}}&q=12.956033,79.136767&days=10&alerts=yes&aqi=yes&dt=2024-05-21
+method: GET
+queryParams:
+  key: "{{API_KEY}}"
+  q: 12.956033,79.136767
+  days: "10"
+  alerts: yes
+  aqi: yes
+  dt: 2024-05-21
+settings: {}
+examples: ./.resources/Future.resources/examples
+order: 4000

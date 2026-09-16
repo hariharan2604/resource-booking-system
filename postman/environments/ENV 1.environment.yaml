@@ -1,0 +1,6 @@
+name: ENV 1
+color: null
+values:
+  - key: loginToken
+    enabled: true
+    secret: true

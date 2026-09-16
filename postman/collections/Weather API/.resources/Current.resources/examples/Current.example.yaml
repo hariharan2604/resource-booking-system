@@ -1,0 +1,79 @@
+$kind: http-example
+request:
+  url: http://api.weatherapi.com/v1/current.json?key={{API_KEY}}&q=Vellore
+  method: GET
+  queryParams:
+    key: "{{API_KEY}}"
+    q: Vellore
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Date: Sun, 19 May 2024 06:53:51 GMT
+    Content-Type: application/json
+    Transfer-Encoding: chunked
+    Connection: keep-alive
+    Vary: Accept-Encoding
+    Server: BunnyCDN-SG1-867
+    CDN-PullZone: "93447"
+    CDN-Uid: 8fa3a04a-75d9-4707-8056-b7b33c8ac7fe
+    CDN-RequestCountryCode: IN
+    Age: "0"
+    Cache-Control: public, max-age=180
+    Via: 1.1 varnish (Varnish/6.0)
+    x-weatherapi-qpm-left: "1000000"
+    X-Varnish: "247613228"
+    CDN-ProxyVer: "1.04"
+    CDN-RequestPullSuccess: "True"
+    CDN-RequestPullCode: "200"
+    CDN-CachedAt: 05/19/2024 06:53:51
+    CDN-EdgeStorageId: "979"
+    CDN-Status: "200"
+    CDN-RequestId: 2adef0e9dfcbc3b32b156345dcf6cac9
+    CDN-Cache: EXPIRED
+    Content-Encoding: br
+  body:
+    type: json
+    content: |-
+      {
+          "location": {
+              "name": "Vellore",
+              "region": "Tamil Nadu",
+              "country": "India",
+              "lat": 12.93,
+              "lon": 79.13,
+              "tz_id": "Asia/Kolkata",
+              "localtime_epoch": 1716101611,
+              "localtime": "2024-05-19 12:23"
+          },
+          "current": {
+              "last_updated_epoch": 1716101100,
+              "last_updated": "2024-05-19 12:15",
+              "temp_c": 35,
+              "temp_f": 94.9,
+              "is_day": 1,
+              "condition": {
+                  "text": "Patchy rain nearby",
+                  "icon": "//cdn.weatherapi.com/weather/64x64/day/176.png",
+                  "code": 1063
+              },
+              "wind_mph": 5.8,
+              "wind_kph": 9.4,
+              "wind_degree": 81,
+              "wind_dir": "E",
+              "pressure_mb": 1003,
+              "pressure_in": 29.63,
+              "precip_mm": 0.01,
+              "precip_in": 0,
+              "humidity": 43,
+              "cloud": 73,
+              "feelslike_c": 38.9,
+              "feelslike_f": 102.1,
+              "vis_km": 10,
+              "vis_miles": 6,
+              "uv": 7,
+              "gust_mph": 6.7,
+              "gust_kph": 10.8
+          }
+      }
+order: 1000

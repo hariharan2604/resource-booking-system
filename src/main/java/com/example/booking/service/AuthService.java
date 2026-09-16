@@ -56,7 +56,7 @@ public class AuthService {
         List<? extends GrantedAuthority> authorities = (List<? extends GrantedAuthority>) authentication
                 .getAuthorities();
 
-        String token = jwtUtil.generateToken(principal.getUsername(), principal.getId(), authorities);
+        String token = jwtUtil.generateToken(principal, authorities);
 
         String role = authorities.get(0).getAuthority().replace("ROLE_", "");
 
@@ -64,6 +64,7 @@ public class AuthService {
                 .token(token)
                 .tokenType("Bearer")
                 .username(principal.getUsername())
+                .userId(principal.getId())
                 .role(role)
                 .expiresInMs(expirationMs)
                 .build();

@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://api.weatherapi.com/v1/current.json?key={{API_KEY}}&q=Vellore
+method: GET
+queryParams:
+  key: "{{API_KEY}}"
+  q: Vellore
+settings: {}
+examples: ./.resources/Current.resources/examples
+order: 1000

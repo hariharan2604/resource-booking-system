@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://api.weatherapi.com/v1/search.json?key={{API_KEY}}&q=Vandalur
+method: GET
+queryParams:
+  key: "{{API_KEY}}"
+  q: Vandalur
+settings: {}
+examples: ./.resources/Search.resources/examples
+order: 3000

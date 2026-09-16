@@ -1,0 +1,16 @@
+$kind: collection
+variables:
+  URL: http://api.postinvest-pro.dv
+  AGENT_ID: a56475cc-620a-4091-a2a0-8a5ebd701b28
+  CASH: e35ad61e-2cb8-4110-b37c-dae78658521e
+  CHEQUE: a2b4f588-c31b-48a1-88d8-5d7958be432c
+  VALID: 69f12a39-0b8d-48b4-acd8-520d02b527f2
+  EXPIRED: 93d2df65-2bfa-4637-8e20-0e6fa706e944
+  RD: 99d23752-f31b-46f3-a251-06f448f20dad
+  ACCESS_TOKEN: ""
+auth:
+  - id: 55736357-a7cc-46cd-bfb1-2b5d29dace1a
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{ACCESS_TOKEN}}"

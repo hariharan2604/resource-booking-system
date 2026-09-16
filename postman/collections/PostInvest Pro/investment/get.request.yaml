@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{URL}}/investment/get"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    // \"investment_acc_no\": \"028447773234\",\r
+
+    \    \"customer_id\": \"\"\r
+
+    }"
+settings: {}
+order: 2000
