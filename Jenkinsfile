@@ -1,33 +1,41 @@
+
 pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'YOUR_DOCKERHUB_USERNAME/resource-booking'
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = 'hariharan2604/resource-booking'
+        IMAGE_TAG  = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Build & Test') {
             steps {
-                sh './gradlew clean build'
+                sh '''
+                    chmod +x gradlew
+                    ./gradlew clean build
+                '''
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh """
-                    docker build \
-                        -t ${IMAGE_NAME}:${IMAGE_TAG} \
-                        -t ${IMAGE_NAME}:latest \
-                        .
-                """
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        sh """
+                            docker build \
+                                -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                                -t ${IMAGE_NAME}:latest \
+                                .
+                        """
+                    } else {
+                        sh """
+                            docker build \
+                                -t ${IMAGE_NAME}:${BRANCH_NAME}-${IMAGE_TAG} \
+                                .
+                        """
+                    }
+                }
             }
         }
 
@@ -45,8 +53,12 @@ pipeline {
                             -u "$DOCKER_USERNAME" \
                             --password-stdin
 
-                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                        docker push ${IMAGE_NAME}:latest
+                        if [ "$BRANCH_NAME" = "main" ]; then
+                            docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+                            docker push "${IMAGE_NAME}:latest"
+                        else
+                            docker push "${IMAGE_NAME}:${BRANCH_NAME}-${IMAGE_TAG}"
+                        fi
 
                         docker logout
                     '''
@@ -56,17 +68,20 @@ pipeline {
     }
 
     post {
+        always {
+            junit(
+                allowEmptyResults: true,
+                testResults: 'build/test-results/test/*.xml'
+            )
+        }
+
         success {
-            echo "Docker image pushed successfully!"
+            echo "Pipeline completed successfully for ${BRANCH_NAME}"
         }
 
         failure {
-            echo "Pipeline failed!"
-        }
-
-        always {
-            junit allowEmptyResults: true,
-                  testResults: 'build/test-results/test/*.xml'
+            echo "Pipeline failed for ${BRANCH_NAME}"
         }
     }
 }
+
