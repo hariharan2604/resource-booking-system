@@ -8,11 +8,25 @@ pipeline {
 
     stages {
 
+        stage('Verify Environment') {
+            steps {
+                sh '''
+                    echo "Java version:"
+                    java -version
+
+                    echo "Gradle version:"
+                    gradle --version
+
+                    echo "Docker version:"
+                    docker --version
+                '''
+            }
+        }
+
         stage('Build & Test') {
             steps {
                 sh '''
-                    chmod +x gradlew
-                    ./gradlew clean build
+                    gradle clean build --no-daemon
                 '''
             }
         }
@@ -43,24 +57,44 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Prepare Docker Tag') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'master') {
-                        sh """
-                            docker build \
-                                -t ${IMAGE_NAME}:${IMAGE_TAG} \
-                                -t ${IMAGE_NAME}:latest \
-                                .
-                        """
+                        env.DOCKER_TAG = env.IMAGE_TAG
                     } else {
-                        sh """
-                            docker build \
-                                -t ${IMAGE_NAME}:${BRANCH_NAME}-${IMAGE_TAG} \
-                                .
-                        """
+                        // Convert branch name into a valid Docker tag
+                        // feature/auth -> feature-auth
+                        // bugfix/JIRA-123 -> bugfix-JIRA-123
+                        // release/v1.0 -> release-v1.0
+                        env.SAFE_BRANCH_NAME = env.BRANCH_NAME
+                            .replaceAll(/[^a-zA-Z0-9_.-]/, '-')
+                            .replaceAll(/-+/, '-')
+                            .replaceAll(/^-+|-+$/, '')
+
+                        env.DOCKER_TAG = "${env.SAFE_BRANCH_NAME}-${env.IMAGE_TAG}"
                     }
+
+                    echo "Branch: ${env.BRANCH_NAME}"
+                    echo "Docker tag: ${env.DOCKER_TAG}"
                 }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    if [ "$BRANCH_NAME" = "master" ]; then
+                        docker build \
+                            -t "${IMAGE_NAME}:${IMAGE_TAG}" \
+                            -t "${IMAGE_NAME}:latest" \
+                            .
+                    else
+                        docker build \
+                            -t "${IMAGE_NAME}:${DOCKER_TAG}" \
+                            .
+                    fi
+                '''
             }
         }
 
@@ -82,7 +116,7 @@ pipeline {
                             docker push "${IMAGE_NAME}:${IMAGE_TAG}"
                             docker push "${IMAGE_NAME}:latest"
                         else
-                            docker push "${IMAGE_NAME}:${BRANCH_NAME}-${IMAGE_TAG}"
+                            docker push "${IMAGE_NAME}:${DOCKER_TAG}"
                         fi
 
                         docker logout
