@@ -140,7 +140,7 @@ java -jar build/libs/resource-booking-system.jar --spring.profiles.active=mysql
 The application now binds its application-level properties through a single
 configuration object:
 
-- `AppProperties` in `src/main/java/com/example/booking/config/AppProperties.java`
+- `AppProperties` in `src/main/java/com/booking/config/AppProperties.java`
 - bound with `@ConfigurationPropertiesScan(basePackageClasses = AppProperties.class)`
 - nested sections cover `jwt` and `cors` settings cleanly without scattering
   `@Value` injections across the codebase
