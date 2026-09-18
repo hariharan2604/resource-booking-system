@@ -4,6 +4,7 @@ plugins {
 
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.sonarqube") version "6.3.1.5724"
 }
 
 group = "com.example"
@@ -74,13 +75,14 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
     jvmArgs(
         "-Djdk.attach.allowAttachSelf=true",
         "-XX:+EnableDynamicAgentLoading"
     )
+
     systemProperty("spring.profiles.active", "test")
 }
-
 
 tasks.jar {
     enabled = false
@@ -106,4 +108,40 @@ tasks.jacocoTestReport {
         html.required.set(true)
         csv.required.set(false)
     }
+}
+
+/*
+ * SonarQube / SonarQube Cloud
+ *
+ * Jenkins provides:
+ *   - sonar.host.url
+ *   - sonar.token
+ *
+ * Project-specific configuration stays here.
+ */
+sonar {
+    properties {
+        property("sonar.projectKey", "resource-booking-system")
+        property("sonar.projectName", "Resource Booking System")
+
+        property(
+            "sonar.organization",
+            "hariharan2604"
+        )
+
+        property("sonar.sourceEncoding", "UTF-8")
+
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory
+                .file("reports/jacoco/test/jacocoTestReport.xml")
+                .get()
+                .asFile
+                .absolutePath
+        )
+    }
+}
+
+tasks.named("sonar") {
+    dependsOn(tasks.jacocoTestReport)
 }
