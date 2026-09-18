@@ -75,13 +75,14 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
     jvmArgs(
         "-Djdk.attach.allowAttachSelf=true",
         "-XX:+EnableDynamicAgentLoading"
     )
+
     systemProperty("spring.profiles.active", "test")
 }
-
 
 tasks.jar {
     enabled = false
@@ -109,26 +110,35 @@ tasks.jacocoTestReport {
     }
 }
 
+/*
+ * SonarQube / SonarQube Cloud
+ *
+ * Jenkins provides:
+ *   - sonar.host.url
+ *   - sonar.token
+ *
+ * Project-specific configuration stays here.
+ */
 sonar {
     properties {
         property("sonar.projectKey", "resource-booking-system")
         property("sonar.projectName", "Resource Booking System")
+
         property(
-            "sonar.host.url",
-            providers.gradleProperty("sonar.host.url")
-                .orElse("https://sonarcloud.io")
-                .get()
-        )
-        property("sonar.sourceEncoding", "UTF-8")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile.absolutePath
+            "sonar.organization",
+            "hariharan2604"
         )
 
-        providers.gradleProperty("sonar.organization")
-            .orElse(providers.environmentVariable("SONAR_ORGANIZATION"))
-            .orNull
-            ?.let { property("sonar.organization", it) }
+        property("sonar.sourceEncoding", "UTF-8")
+
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory
+                .file("reports/jacoco/test/jacocoTestReport.xml")
+                .get()
+                .asFile
+                .absolutePath
+        )
     }
 }
 

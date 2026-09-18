@@ -26,27 +26,8 @@ pipeline {
         stage('Build & Test') {
             steps {
                 sh '''
-                    gradle clean build --no-daemon
+                    gradle clean build jacocoTestReport --no-daemon
                 '''
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    withCredentials([
-                        string(
-                            credentialsId: 'sonarqube-credentials',
-                            variable: 'SONAR_TOKEN'
-                        )
-                    ]) {
-                        sh '''
-                            gradle sonar \
-                                --no-daemon \
-                                -Dsonar.token="$SONAR_TOKEN"
-                        '''
-                    }
-                }
             }
         }
 
@@ -76,22 +57,40 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        gradle sonar \
+                            -Dsonar.token="$SONAR_AUTH_TOKEN" \
+                            --no-daemon
+                    '''
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Prepare Docker Tag') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'master') {
                         env.DOCKER_TAG = env.IMAGE_TAG
                     } else {
-                        // Convert branch name into a valid Docker tag
-                        // feature/auth -> feature-auth
-                        // bugfix/JIRA-123 -> bugfix-JIRA-123
-                        // release/v1.0 -> release-v1.0
+
                         env.SAFE_BRANCH_NAME = env.BRANCH_NAME
                             .replaceAll(/[^a-zA-Z0-9_.-]/, '-')
                             .replaceAll(/-+/, '-')
                             .replaceAll(/^-+|-+$/, '')
 
-                        env.DOCKER_TAG = "${env.SAFE_BRANCH_NAME}-${env.IMAGE_TAG}"
+                        env.DOCKER_TAG =
+                            "${env.SAFE_BRANCH_NAME}-${env.IMAGE_TAG}"
                     }
 
                     echo "Branch: ${env.BRANCH_NAME}"
