@@ -177,6 +177,27 @@ with the JVM system property `spring.profiles.active=test` in the shared
 
 The HTML JaCoCo report is written to `build/reports/jacoco/test/html/`.
 
+## SonarQube analysis
+
+The Gradle `sonar` task publishes source analysis and the JaCoCo XML coverage
+report to SonarQube:
+
+```bash
+./gradlew clean test sonar \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.organization=<your-organization-key> \
+  -Dsonar.token=<your-token>
+```
+
+The SonarQube Cloud organization key can also be provided through the
+`SONAR_ORGANIZATION` environment variable. The URL, organization, and token
+are supplied at runtime so they are not stored in the repository.
+
+For Jenkins, configure a SonarQube server named `sonarqube` with the URL
+`https://sonarcloud.io`, and add a Secret Text credential named
+`sonarqube-token`. The organization key should be configured as a protected
+Jenkins environment variable named `SONAR_ORGANIZATION`.
+
 ## CI/CD with GitHub Actions
 
 The workflow at `.github/workflows/ci-cd.yml` runs the Gradle test/build

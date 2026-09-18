@@ -31,6 +31,25 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([
+                        string(
+                            credentialsId: 'sonarqube-credentials',
+                            variable: 'SONAR_TOKEN'
+                        )
+                    ]) {
+                        sh '''
+                            gradle sonar \
+                                --no-daemon \
+                                -Dsonar.token="$SONAR_TOKEN"
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Code Coverage') {
             steps {
                 recordCoverage(

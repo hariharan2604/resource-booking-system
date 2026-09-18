@@ -4,6 +4,7 @@ plugins {
 
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.sonarqube") version "6.3.1.5724"
 }
 
 group = "com.example"
@@ -106,4 +107,31 @@ tasks.jacocoTestReport {
         html.required.set(true)
         csv.required.set(false)
     }
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "resource-booking-system")
+        property("sonar.projectName", "Resource Booking System")
+        property(
+            "sonar.host.url",
+            providers.gradleProperty("sonar.host.url")
+                .orElse("https://sonarcloud.io")
+                .get()
+        )
+        property("sonar.sourceEncoding", "UTF-8")
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile.absolutePath
+        )
+
+        providers.gradleProperty("sonar.organization")
+            .orElse(providers.environmentVariable("SONAR_ORGANIZATION"))
+            .orNull
+            ?.let { property("sonar.organization", it) }
+    }
+}
+
+tasks.named("sonar") {
+    dependsOn(tasks.jacocoTestReport)
 }
