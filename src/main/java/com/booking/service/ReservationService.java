@@ -16,7 +16,6 @@ import com.booking.repository.UserRepository;
 import com.booking.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -72,7 +71,7 @@ public class ReservationService {
         return toResponse(reservation);
     }
 
-    @CachePut(value = "reservations", key = "#result.id")
+    @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponse create(UserPrincipal principal, ReservationCreateRequest request) {
         if (!request.getEndTime().isAfter(request.getStartTime())) {
             throw new InvalidReservationException("endTime must be after startTime");
@@ -109,7 +108,7 @@ public class ReservationService {
     }
 
     /** Full update — ADMIN only; enforced via @PreAuthorize at the controller. */
-    @CachePut(value = "reservations", key = "#id")
+    @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponse update(Long id, ReservationUpdateRequest request) {
         Reservation reservation = findEntity(id);
 
@@ -135,7 +134,7 @@ public class ReservationService {
     }
 
     /** USER may cancel only their own reservation; ADMIN may cancel any. */
-    @CachePut(value = "reservations", key = "#id")
+    @CacheEvict(value = "reservations", allEntries = true)
     public ReservationResponse cancel(UserPrincipal principal, Long id) {
         Reservation reservation = findEntity(id);
         assertCanView(principal, reservation);
@@ -150,7 +149,7 @@ public class ReservationService {
     }
 
     /** ADMIN only; enforced via @PreAuthorize at the controller. */
-    @CacheEvict(value = "reservations", key = "#id")
+    @CacheEvict(value = "reservations", allEntries = true)
     public void delete(Long id) {
         Reservation reservation = findEntity(id);
         if (reservation.getStatus() != ReservationStatus.CANCELLED) {
