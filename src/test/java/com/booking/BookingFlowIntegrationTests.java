@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureWebMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -38,6 +39,75 @@ class BookingFlowIntegrationTests {
 
         @Autowired
         private ObjectMapper objectMapper;
+
+        @Autowired
+        private CacheManager cacheManager;
+
+        @Test
+        void resourceListReflectsNewResourceAfterCreate() throws Exception {
+                String userToken = login("user", "user123");
+                String adminToken = login("admin", "admin123");
+
+                mockMvc.perform(get("/api/resources")
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk());
+
+                String resourceName = "Cache Room " + System.nanoTime();
+                String resourceJson = objectMapper.writeValueAsString(Map.of(
+                                "name", resourceName,
+                                "type", "ROOM",
+                                "description", "Cache invalidation test",
+                                "location", "Test floor",
+                                "capacity", 4,
+                                "pricePerHour", 25.00,
+                                "available", true));
+
+                mockMvc.perform(post("/api/resources")
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceJson))
+                                .andExpect(status().isCreated());
+
+                mockMvc.perform(get("/api/resources")
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(content().string(containsString(resourceName)));
+        }
+
+        @Test
+        void reservationCacheIsInvalidatedAfterAdminUpdate() throws Exception {
+                cacheManager.getCache("reservations").clear();
+                String userToken = login("user", "user123");
+                String adminToken = login("admin", "admin123");
+                long resourceId = firstResourceId(userToken);
+
+                MvcResult created = mockMvc.perform(post("/api/reservations")
+                                .header("Authorization", bearer(userToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(reservationPayload(resourceId, "2050-01-10T09:00:00", "2050-01-10T10:00:00")))
+                                .andExpect(status().isCreated())
+                                .andReturn();
+                long reservationId = json(created).get("id").asLong();
+
+                mockMvc.perform(get("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("PENDING"));
+
+                mockMvc.perform(put("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(adminToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"resourceId\":" + resourceId
+                                                + ",\"startTime\":\"2050-01-10T10:00:00\","
+                                                + "\"endTime\":\"2050-01-10T11:00:00\","
+                                                + "\"status\":\"CONFIRMED\"}"))
+                                .andExpect(status().isOk());
+
+                mockMvc.perform(get("/api/reservations/{id}", reservationId)
+                                .header("Authorization", bearer(userToken)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("CONFIRMED"));
+        }
 
         @Test
         void adminCanCreateUpdateAndDeleteResource() throws Exception {

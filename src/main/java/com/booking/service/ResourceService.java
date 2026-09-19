@@ -7,7 +7,6 @@ import com.booking.exception.ResourceNotFoundException;
 import com.booking.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +20,6 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
 
-    @Cacheable(value = "resources", key = "#pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort.toString()")
     @Transactional(readOnly = true)
     public Page<ResourceResponse> getAll(Pageable pageable) {
         return resourceRepository.findAll(pageable).map(this::toResponse);
@@ -33,7 +31,7 @@ public class ResourceService {
         return toResponse(findEntity(id));
     }
 
-    @CachePut(value = "resources", key = "#result.id")
+    @CacheEvict(value = "resources", allEntries = true)
     public ResourceResponse create(ResourceRequest request) {
         Resource resource = Resource.builder()
                 .name(request.getName())
@@ -48,7 +46,7 @@ public class ResourceService {
         return toResponse(resourceRepository.save(resource));
     }
 
-    @CachePut(value = "resources", key = "#id")
+    @CacheEvict(value = "resources", allEntries = true)
     public ResourceResponse update(Long id, ResourceRequest request) {
         Resource resource = findEntity(id);
 
@@ -65,7 +63,7 @@ public class ResourceService {
         return toResponse(resourceRepository.save(resource));
     }
 
-    @CacheEvict(value = "resources", key = "#id")
+    @CacheEvict(value = "resources", allEntries = true)
     public void delete(Long id) {
         if (!resourceRepository.existsById(id)) {
             throw new ResourceNotFoundException("Resource not found with id: " + id);
